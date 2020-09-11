@@ -1,0 +1,3 @@
+#+title: Runemacs
+
+This is an example of a fully custom Emacs configuration that you can use as inspiration when building your own!
