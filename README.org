@@ -1,3 +1,85 @@
 #+title: Runemacs
 
 This is an example of a fully custom Emacs configuration that you can use as inspiration when building your own!
+
+We're developing this configuration live on YouTube, subscribe to [[https://www.youtube.com/c/thedevaspect?sub_confirmation=1][the_dev_aspect]] (make sure to click the bell!) so that you're notified of future streams.
+
+*Previous Streams*
+
+- [[https://www.youtube.com/watch?v=74zOY-vgkyw][Live-Coding a Custom Emacs Configuration from Scratch]] ([[https://github.com/daviwil/runemacs/tree/c0266ff684f670ecc5e41615c0282912e6615214][Code]])
+
+* Usage Instructions
+
+*IMPORTANT:* Be sure to read the commentary in =init.el= in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!
+
+*Linux and macOS*
+
+On Linux, Emacs can be found in every major Linux distribution's package manager.  On macOS you can install Emacs using [[https://brew.sh/][Homebrew]] via =brew install emacs=.
+
+You can easily get started with this configuration on Linux and macOS by following these steps:
+
+1. Create a folder in your home directory called =.emacs.d= (if one already exists, you could try moving it to =.emacs.d-old= before trying this)
+2. Copy the contents of =init.el= from this repo into a file named =init.el= inside of =.emacs.d=
+3. Start Emacs!
+
+*Windows*
+
+You can download the latest Emacs version (27.1 at the time of this writing) for Windows by heading to the [[https://ftp.gnu.org/gnu/emacs/windows/emacs-27/][GNU FTP site]].  Downloading and running the [[https://ftp.gnu.org/gnu/emacs/windows/emacs-27/emacs-27.1-x86_64-installer.exe][installer package]] will likely be the easiest way to get started.  You can also [[https://chocolatey.org/packages/Emacs][install Emacs via Chocolatey]] if you prefer a more automated approach.
+
+The location where the Emacs configuration folder lives may vary based on your version of Windows.  If you have trouble getting this to work, check the [[https://www.gnu.org/software/emacs/manual/html_node/efaq-w32/Location-of-init-file.html#Location-of-init-file][official FAQ]] on the topic.  If you still can't get it to work, feel free to file an issue and I can help investigate.
+
+For most modern Windows versions (Windows 7+), these steps should work:
+
+1. Create a folder in your home directory (likely =C:\Users\yourusername\=) called =.emacs.d=
+2. Copy the contents of =init.el= from this repo into a file named =init.el= inside of =.emacs.d=
+3. Start Emacs!
+
+* Recommendations
+
+Here are some general recommendations on Emacs usage that you might find helpful:
+
+** Replace CapsLock with CTRL
+
+Most people don't use the CapsLock key (unless you like YELLING ON THE INTERNET) so you can use this simple fix to replace it with the CTRL to make your Emacs life easier.  Doing this will prevent you from having to bend your pinky down all day long to hit all those fabled Emacs keybindings, allowing you to keep your hands on the home row of the keyboard.
+
+Here's how to do it across all 3 major operating systems:
+
+*Linux*
+
+There are [[https://askubuntu.com/questions/33774/how-do-i-remap-the-caps-lock-and-ctrl-keys][many ways]] to accomplish this in Linux, but the easiest (and most repeatable) I've found is to use [[https://wiki.archlinux.org/index.php/Xmodmap][xmodmap]].  First, create a file named =.Xmodmap= in your home folder and populate it like so:
+
+#+begin_src
+
+clear lock
+clear control
+keycode 66 = Control_L
+add control = Control_L
+add Lock = Control_R
+
+#+end_src
+
+This replaces CapsLock with control and also replaces the Ctrl key on the right side with CapsLock just in case you ever need to use it.  Most login systems (GDM, KDM, etc) will load this file when you log in so you might not need to do anything extra for it to take effect, just log out and log back in again.  If that doesn't seem to work, you can add this line to one of your startup files (=.xinitrc=, =.profile=, window manager configuration, etc):
+
+#+begin_src sh
+
+xmodmap ~/.Xmodmap
+
+#+end_src
+
+*Windows*
+
+On Windows you can use a simple registry file to tweak the CapsLock mapping.  Save the following text to a file called =CapsLockHack.reg=:
+
+#+begin_src
+
+REGEDIT4
+[HKEY_CURRENT_USER\Keyboard Layout]
+"Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,1d,00,3a,00,00,00,00,00
+
+#+end_src
+
+Now double-click on this file in Windows Explorer and allow Windows to apply it to your registry settings.  After you log out of your current session and log back in the new key mapping should be in effect.
+
+*macOS*
+
+Thankfully Apple saw fit to make this a first-class option in macOS.  You can follow the [[https://support.apple.com/guide/mac-help/change-the-behavior-of-the-modifier-keys-mchlp1011/mac][official documentation]] for your version of macOS to find the Modifier Keys settings and then switch Caps Lock to Control on that page.
