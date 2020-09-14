@@ -34,6 +34,12 @@ For most modern Windows versions (Windows 7+), these steps should work:
 2. Copy the contents of =init.el= from this repo into a file named =init.el= inside of =.emacs.d=
 3. Start Emacs!
 
+** Installing the Fira Code Font
+
+This configuration uses the [[https://github.com/tonsky/FiraCode][Fira Code]] font by [[https://github.com/tonsky][@tonsky]] and installation instructions can be found on [[https://github.com/tonsky/FiraCode/wiki/Installing][this wiki page]].
+
+However, since this is meant to be /your/ configuration, feel free to choose your own font!
+
 * Recommendations
 
 Here are some general recommendations on Emacs usage that you might find helpful:
