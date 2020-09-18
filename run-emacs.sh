@@ -5,4 +5,4 @@
 # necessary tweaks in stream-tweaks.el that are only meant for use in the live
 # stream.
 
-emacs -Q --load stream-tweaks.el --load init.el
+emacs -Q --load stream-tweaks.el --load init.el init.el
