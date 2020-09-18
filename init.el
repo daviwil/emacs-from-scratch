@@ -15,8 +15,6 @@
 
 (set-face-attribute 'default nil :font "Fira Code Retina" :height runemacs/default-font-size)
 
-(load-theme 'wombat)
-
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -81,7 +79,7 @@
   :custom ((doom-modeline-height 15)))
 
 (use-package doom-themes
-  :init (load-theme 'doom-gruvbox))
+  :init (load-theme 'doom-dracula t))
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
