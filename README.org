@@ -8,6 +8,7 @@ We're developing this configuration live on YouTube, subscribe to [[https://www.
 
 1. [[https://www.youtube.com/watch?v=74zOY-vgkyw][Live-Coding a Custom Emacs Configuration from Scratch]] ([[https://github.com/daviwil/runemacs/tree/c0266ff684f670ecc5e41615c0282912e6615214][Code]])
 2. [[https://www.youtube.com/watch?v=IspAZtNTslY][Adding Helpful UI Improvements]] ([[https://github.com/daviwil/runemacs/tree/43c0401355c7971cb4491690ee4b8449505a5d58][Code]])
+3. [[https://www.youtube.com/watch?v=xaZMwNELaJY][Key Bindings and Evil]] ([[https://github.com/daviwil/runemacs/blob/82d24eea516e7799ead20cf068542e2b5ecb270e/init.el][Code]])
 
 * Usage Instructions
 
