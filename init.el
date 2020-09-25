@@ -1,29 +1,19 @@
 ;; You will most likely need to adjust this font size for your system!
 (defvar runemacs/default-font-size 180)
 
-(setq inhibit-startup-message t)
-
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
 (set-fringe-mode 10)        ; Give some breathing room
 
-(menu-bar-mode -1)            ; Disable the menu bar
-
 ;; Set up the visible bell
 (setq visible-bell t)
-
-(set-face-attribute 'default nil :font "Fira Code Retina" :height runemacs/default-font-size)
-
-;; Make ESC quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;; Initialize package sources
-(require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("org" . "https://orgmode.org/elpa/")
                          ("elpa" . "https://elpa.gnu.org/packages/")))
+
+(message "This is annoying")
 
 (package-initialize)
 (unless package-archive-contents
