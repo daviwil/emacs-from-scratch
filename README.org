@@ -4,6 +4,8 @@ This is an example of a fully custom Emacs configuration that you can use as ins
 
 We're developing this configuration live on YouTube, subscribe to [[https://www.youtube.com/c/thedevaspect?sub_confirmation=1][the_dev_aspect]] (make sure to click the bell!) so that you're notified of future streams.
 
+If you're enjoying the videos and benefitting from the examples in this repo, please *consider [[https://github.com/sponsors/daviwil][becoming a sponsor]]* to support the development of future content!
+
 *Previous Streams*
 
 1. [[https://www.youtube.com/watch?v=74zOY-vgkyw][Live-Coding a Custom Emacs Configuration from Scratch]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c0266ff684f670ecc5e41615c0282912e6615214][Code]])
