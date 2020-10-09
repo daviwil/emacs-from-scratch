@@ -1,0 +1,15 @@
+
+
+* 2020
+
+** 2020-10 October
+
+*** 2020-10-09 Friday
+
+**** 10:08 AM - Journal                                          :journal:
+:LOGBOOK:
+CLOCK: [2020-10-09 Fri 10:08]--[2020-10-09 Fri 10:08] =>  0:00
+:END:
+
+Today was a great day!  We learned more about Org Mode.
+

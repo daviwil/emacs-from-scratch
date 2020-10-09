@@ -1,0 +1,5 @@
+* Weight
+|                        |     |                                        |
+|------------------------+-----+----------------------------------------|
+| [2020-10-09 Fri 10:10] | 160 | Ate 3 hamburgers today.  I feel great! |
+| [2020-10-09 Fri 10:11] | 165 | Shouldn't have eaten those burgers...  |
