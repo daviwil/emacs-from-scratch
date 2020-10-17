@@ -14,7 +14,7 @@ If you're enjoying the videos and benefitting from the examples in this repo, pl
 4. [[https://youtu.be/INTu30BHZGk][Projectile and Magit]] ([[https://github.com/daviwil/emacs-from-scratch/tree/500370fa06889dad313e60473d73090fcfbe106d][Code]])
 5. [[https://www.youtube.com/watch?v=VcgjTEa0kU4][Org Mode Basics]] ([[https://github.com/daviwil/emacs-from-scratch/tree/1a13fcf0dd6afb41fce71bf93c5571931999fed8][Code]])
 6. [[https://youtu.be/PNE-mgkZ6HM][Organizing Your Life with Org Mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c55d0f5e309f7ed8ffa3c00bc35c75937a5184e4][Code]])
-7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] (Code)
+7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] ([[https://github.com/daviwil/emacs-from-scratch/tree/9388cf6ecd9b44c430867a5c3dad5f050fdc0ee1][Code]])
 
 * Usage Instructions
 
