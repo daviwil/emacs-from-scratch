@@ -2,7 +2,7 @@
 
 This is an example of a fully custom Emacs configuration that you can use as inspiration when building your own!
 
-We're developing this configuration live on YouTube, subscribe to [[https://www.youtube.com/c/thedevaspect?sub_confirmation=1][the_dev_aspect]] (make sure to click the bell!) so that you're notified of future streams.
+We're developing this configuration live on YouTube, subscribe to [[https://www.youtube.com/c/SystemCrafters?sub_confirmation=1][System Crafters]] (make sure to click the bell!) so that you're notified of future streams.
 
 If you're enjoying the videos and benefitting from the examples in this repo, please *consider [[https://github.com/sponsors/daviwil][becoming a sponsor]]* to support the development of future content!
 
