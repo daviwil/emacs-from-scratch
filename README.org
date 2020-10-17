@@ -14,10 +14,11 @@ If you're enjoying the videos and benefitting from the examples in this repo, pl
 4. [[https://youtu.be/INTu30BHZGk][Projectile and Magit]] ([[https://github.com/daviwil/emacs-from-scratch/tree/500370fa06889dad313e60473d73090fcfbe106d][Code]])
 5. [[https://www.youtube.com/watch?v=VcgjTEa0kU4][Org Mode Basics]] ([[https://github.com/daviwil/emacs-from-scratch/tree/1a13fcf0dd6afb41fce71bf93c5571931999fed8][Code]])
 6. [[https://youtu.be/PNE-mgkZ6HM][Organizing Your Life with Org Mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c55d0f5e309f7ed8ffa3c00bc35c75937a5184e4][Code]])
+7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] (Code)
 
 * Usage Instructions
 
-*IMPORTANT:* Be sure to read the commentary in =init.el= in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!
+*IMPORTANT:* Be sure to read the commentary in [[file:Emacs.org][Emacs.org]] in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!
 
 *Linux and macOS*
 
@@ -25,9 +26,10 @@ On Linux, Emacs can be found in every major Linux distribution's package manager
 
 You can easily get started with this configuration on Linux and macOS by following these steps:
 
-1. Create a folder in your home directory called =.emacs.d= (if one already exists, you could try moving it to =.emacs.d-old= before trying this)
-2. Copy the contents of =init.el= from this repo into a file named =init.el= inside of =.emacs.d=
-3. Start Emacs!
+1. Clone this repository to a folder on your system: =git clone https://github.com/daviwil/emacs-from-scratch=
+2. Back up any existing Emacs configuration you may already have in your home directory in the =.emacs.d= folder (you could try moving it to =.emacs.d-old=)
+3. Rename the directory for the clone of this repo to =~/.emacs.d=.
+4. Start Emacs!
 
 *Windows*
 
@@ -37,9 +39,10 @@ The location where the Emacs configuration folder lives may vary based on your v
 
 For most modern Windows versions (Windows 7+), these steps should work:
 
-1. Create a folder in your home directory (likely =C:\Users\yourusername\=) called =.emacs.d=
-2. Copy the contents of =init.el= from this repo into a file named =init.el= inside of =.emacs.d=
-3. Start Emacs!
+1. Clone this repository to a folder on your system: =git clone https://github.com/daviwil/emacs-from-scratch=
+2. Back up any existing Emacs configuration you may already have in your home directory  (likely =C:\Users\yourusername\=) in the =.emacs.d= folder (you could try moving it to =.emacs.d-old=)
+3. Rename the directory for the clone of this repo to =C:\Users\yourusername\.emacs.d=.
+4. Start Emacs!
 
 ** Installing the Fira Code Font
 
