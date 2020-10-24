@@ -4,5 +4,5 @@
 ;; Don't use my own package folder by accident
 (setq package-user-dir "~/Projects/Code/emacs-from-scratch/packages")
 
-(setq efs/default-font-size 280)
-(setq efs/default-variable-font-size 290)
+(setq efs/default-font-size 300)
+(setq efs/default-variable-font-size 340)
