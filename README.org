@@ -18,6 +18,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 6. [[https://youtu.be/PNE-mgkZ6HM][Organizing Your Life with Org Mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c55d0f5e309f7ed8ffa3c00bc35c75937a5184e4][Code]])
 7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] ([[https://github.com/daviwil/emacs-from-scratch/tree/9388cf6ecd9b44c430867a5c3dad5f050fdc0ee1][Code]])
 8. [[https://youtu.be/E-NAM9U5JYE][Build Your Own IDE with lsp-mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/6d078217a41134cc667f969430d150c50d03f448][Code]])
+9. [[https://youtu.be/wa_wZIuT9Vw][Learn to Love the Terminal Modes]] (Code)
 
 * Usage Instructions
 
