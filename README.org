@@ -94,12 +94,12 @@ On Windows you can use a simple registry file to tweak the CapsLock mapping.  Sa
 #+begin_src
 
 REGEDIT4
-[HKEY_CURRENT_USER\Keyboard Layout]
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Keyboard Layout]
 "Scancode Map"=hex:00,00,00,00,00,00,00,00,02,00,00,00,1d,00,3a,00,00,00,00,00
 
 #+end_src
 
-Now double-click on this file in Windows Explorer and allow Windows to apply it to your registry settings.  After you log out of your current session and log back in the new key mapping should be in effect.
+Now double-click on this file in Windows Explorer and allow Windows to apply it to your registry settings.  After you log out of your current session and log back in the new key mapping should be in effect. Note that this change will affect *all* users on your system.
 
 *macOS*
 
