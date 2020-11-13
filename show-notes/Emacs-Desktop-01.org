@@ -1,0 +1,248 @@
+* Check out the GitHub repo
+
+https://github.com/daviwil/emacs-from-scratch
+
+* What is EXWM?
+
+Check out the wiki: https://github.com/ch11ng/exwm/wiki
+
+*Benefits*
+
+- You can use your Emacs keybindings *everywhere*
+- You can manage your windows like any other Emacs window
+- Instead of searching around your open windows, fuzzy match by title!
+- You can simulate Emacs keybindings in programs that don't support it
+
+*Comparison to other WMs*
+
+- Has floating windows, fullscreen
+- You control the window placement
+- You can easily script how individual programs are handled
+
+* Settings up .emacs.d
+
+Make sure to install prerequisites:
+
+#+begin_src sh
+
+  sudo apt install emacs git fonts-firacode fonts-cantarell
+
+#+end_src
+
+#+begin_src sh
+
+  git clone https://github.com/daviwil/emacs-from-scratch .emacs.d
+
+#+end_src
+
+- Disable Forge temporarily (it needs =gcc=)
+- Disable tangle on the last block
+
+* How to boot into Emacs
+
+The startup script launches anything that needs to happen before Emacs starts and then starts Emacs with a D-BUS session.
+
+#+begin_src sh
+
+  #!/bin/sh
+
+  # NOTE: This is only for the live demo, not needed for your configuration!
+  # spice-vdagent
+
+  # Fire it up
+  exec dbus-launch --exit-with-session emacs -mm --debug-init
+
+#+end_src
+
+#+begin_src sh
+
+  [Desktop Entry]
+  Name=EXWM
+  Comment=Emacs Window Manager
+  Exec=sh /home/daviwil/.emacs.d/exwm/start-exwm.sh
+  TryExec=sh
+  Type=Application
+  X-LightDM-DesktopName=exwm
+  DesktopNames=exwm
+
+#+end_src
+
+- Set this up with =sudo ln -f ~/.emacs.d/exwm/exwm.desktop /usr/share/xsessions/exwm.desktop=
+- You may need to restart GDM!
+
+#+begin_src sh
+
+  sudo systemctl restart gdm
+
+#+end_src
+
+* Setting up EXWM
+
+#+begin_src emacs-lisp
+
+  (defun efs/exwm-update-class ()
+    (exwm-workspace-rename-buffer exwm-class-name)))
+
+  (use-package exwm
+    :config
+    ;; Set the default number of workspaces
+    (setq exwm-workspace-number 5)
+
+    ;; When window "class" updates, use it to set the buffer name
+    ;; (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
+
+    ;; These keys should always pass through to Emacs
+    (setq exwm-input-prefix-keys
+      '(?\C-x
+        ?\C-u
+        ?\C-h
+        ?\M-x
+        ?\M-`
+        ?\M-&
+        ?\M-:
+        ?\C-\M-j  ;; Buffer list
+        ?\C-\ ))  ;; Ctrl+Space
+
+    ;; Ctrl+Q will enable the next key to be sent directly
+    (define-key exwm-mode-map [?\C-q] 'exwm-input-send-next-key)
+
+    ;; Set up global key bindings.  These always work, no matter the input state!
+    ;; Keep in mind that changing this list after EXWM initializes has no effect.
+    (setq exwm-input-global-keys
+          `(
+            ;; Reset to line-mode (C-c C-k switches to char-mode via exwm-input-release-keyboard)
+            ([?\s-r] . exwm-reset)
+
+            ;; Move between windows
+            ([s-left] . windmove-left)
+            ([s-right] . windmove-right)
+            ([s-up] . windmove-up)
+            ([s-down] . windmove-down)
+
+            ;; Launch applications via shell command
+            ([?\s-&] . (lambda (command)
+                         (interactive (list (read-shell-command "$ ")))
+                         (start-process-shell-command command nil command)))
+
+            ;; Switch workspace
+            ([?\s-w] . exwm-workspace-switch)
+
+            ;; 's-N': Switch to certain workspace with Super (Win) plus a number key (0 - 9)
+            ,@(mapcar (lambda (i)
+                        `(,(kbd (format "s-%d" i)) .
+                          (lambda ()
+                            (interactive)
+                            (exwm-workspace-switch-create ,i))))
+                      (number-sequence 0 9))))
+
+    (exwm-enable))
+
+#+end_src
+
+* Managing windows
+
+- Use =M-&= to launch a process asynchronously
+- Use =S-M-&= binding from EXWM to launch without popup
+
+- Split windows just like you would anywhere else =split-window-below/right=, =evil-window-split/vsplit=
+- Move between windows: =windmove-left/right/up/down=
+- Move windows: =windmove-swap-states-left/right/up/down= (only on Emacs 27!)
+- Floating windows: =exwm-floating-toggle-floating=
+- Fullscreen: =exwm-layout-toggle-fullscreen=
+- line-mode vs char-mode
+
+* Workspaces
+
+- =s+(0-9)= - Switch to numbered workspace
+- =s+w= - Workspace selector
+- =C-c RET=: Move window to numbered workspace
+- *NOTE*: Windows are attached to a single workspace!
+- We will show how to display the current workspace in modeline in the next stream
+
+* Rebind CapsLock to Ctrl
+
+Contents of =~/.emacs/exwm/Xmodmap=.  Make sure =xmodmap= is installed!  This swaps CapsLock with Ctrl and places CapsLock on the Ctrl on the right side of the keyboard so you can get to it if needed.
+
+#+begin_src sh
+
+clear lock
+clear control
+keycode 66 = Control_L
+add control = Control_L
+add Lock = Control_R
+
+#+end_src
+
+Put this in the EXWM configuration:
+
+#+begin_src emacs-lisp
+
+    ;; Remap CapsLock to Ctrl
+    (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+
+#+end_src
+
+* Setting screen resolution
+
+#+begin_src emacs-lisp
+
+  ;; Ensure screen updates with xrandr will refresh EXWM frames
+  (require 'exwm-randr)
+  (exwm-randr-enable)
+
+#+end_src
+
+- Generate a script with =arandr=
+- Add =xrandr= invocation to the init hook
+
+#+begin_src emacs-lisp
+
+    ;; Set the screen resolution
+    (start-process-shell-command "xrandr" nil "")
+
+#+end_src
+
+- We will discuss multiple displays in a future stream!
+
+* Set screen DPI (optional)
+
+This belongs in =~/.emacs.d/exwm/Xresources=
+
+#+begin_src sh
+
+Xft.dpi:   180   # Set this to your desired DPI!  Larger number means bigger text and UI
+
+#+end_src
+
+Add this to =start-exwm.sh=.  Make sure =xrdb= is installed!
+
+#+begin_src sh
+
+xrdb ~/.emacs.d/exwm/Xresources
+
+#+end_src
+
+* System Tray
+
+#+begin_src emacs-lisp
+
+  ;; Load the system tray before exwm-init
+  (require 'exwm-systemtray)
+  (exwm-systemtray-enable)
+
+#+end_src
+
+
+- Use =nm-applet= to test
+
+* Debugging startup issues
+
+- =check-parens=
+- Use =emacs -q -nw= in a virtual terminal
+- Use another desktop environment
+
+* What's next?
+
+- Setting UI and icon themes
+- Desktop notifications
+- More tips on window management and keybindings
