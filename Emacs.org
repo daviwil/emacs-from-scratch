@@ -321,6 +321,7 @@ This section contains the basic configuration for =org-mode= plus the configurat
     (visual-line-mode 1))
 
   (use-package org
+    :ensure org-plus-contrib
     :hook (org-mode . efs/org-mode-setup)
     :config
     (setq org-ellipsis " ▾")
@@ -984,7 +985,9 @@ This is an example of configuring another non-Emacs application using org-mode. 
 
 #+end_src
 
-#+begin_src conf :tangle .config/some-app/config :noweb yes
+*NOTE*: Set the =:tangle= parameter below to =.config/some-app/config= for this to work!
+
+#+begin_src conf :tangle no :noweb yes
 
   value=<<the-value()>>
 
