@@ -1,0 +1,135 @@
+#+title: How to Give Presentations with Org Mode
+#+author: System Crafters
+
+* Why?
+
+- No need for complicated presentation software
+- Impress and/or confuse your coworkers
+- Because it's fun!
+  
+* COMMENT This isn't shown!
+
+This slide won't be shown as part of the presentation because it has a `COMMENT` state.
+
+* Initial Setup
+
+https://github.com/takaxp/org-tree-slide
+
+#+begin_src emacs-lisp
+
+  (use-package org-tree-slide
+    :custom
+    (org-image-actual-width nil))
+
+#+end_src
+
+Run =org-tree-slide-mode=!
+Navigate slides with =C-<= and =C->=
+
+* What Can It Do?
+
+** Display Images
+
+*** System Crafters
+
+I haven't included these images with the notes so you will have to change the link to another image on your computer!  You can do that with =C-c C-l= (=org-insert-link=) and link to the image without adding a description.
+
+#+ATTR_HTML: :width 500
+[[file:System Crafters2-01.png]]
+
+*** Emacs
+
+#+ATTR_HTML: :width 300 :height 300
+[[file:Emacs.png]]
+
+** Run Code Examples
+
+This is a terrible code snippet for *example purposes only*!
+
+#+begin_src emacs-lisp 
+
+  (let ((output ""))
+    (dolist (word '("Emacs" "is" "awesome!"))
+            (setq output (concat output word " ")))
+    (message (string-trim output)))
+
+#+end_src
+
+#+RESULTS:
+: Emacs is awesome!
+
+** Countdown Timer
+
+Run =org-tree-slide-play-with-timer= to have a countdown timer appear in your modeline.
+
+Good for keeping track of how much time you have left!
+
+* Profiles
+
+You can run each of these profiles after turning on =org-tree-slide-mode=
+
+** Simple Profile
+
+Run =org-tree-slide-simple-profile=
+
+** Presentation Profile
+
+Run =org-tree-slide-presentation-profile=
+
+** Narrowing Profile
+
+Run =org-tree-slide-narrowing-control-profile=
+
+* Customization
+
+You can also customize everything yourself without using the built-in profiles.
+
+#+begin_src emacs-lisp
+
+  (use-package hide-mode-line)
+
+  (defun efs/presentation-setup ()
+    ;; Hide the mode line
+    (hide-mode-line-mode 1)
+
+    ;; Display images inline
+    (org-display-inline-images) ;; Can also use org-startup-with-inline-images
+
+    ;; Scale the text.  The next line is for basic scaling:
+    (setq text-scale-mode-amount 3)
+    (text-scale-mode 1))
+
+    ;; This option is more advanced, allows you to scale other faces too
+    ;; (setq-local face-remapping-alist '((default (:height 2.0) variable-pitch)
+    ;;                                    (org-verbatim (:height 1.75) org-verbatim)
+    ;;                                    (org-block (:height 1.25) org-block))))
+
+  (defun efs/presentation-end ()
+    ;; Show the mode line again
+    (hide-mode-line-mode 0)
+
+    ;; Turn off text scale mode (or use the next line if you didn't use text-scale-mode)
+    ;; (text-scale-mode 0))
+
+    ;; If you use face-remapping-alist, this clears the scaling:
+    (setq-local face-remapping-alist '((default variable-pitch default))))
+
+  (use-package org-tree-slide
+    :hook ((org-tree-slide-play . efs/presentation-setup)
+           (org-tree-slide-stop . efs/presentation-end))
+    :custom
+    (org-tree-slide-slide-in-effect t)
+    (org-tree-slide-activate-message "Presentation started!")
+    (org-tree-slide-deactivate-message "Presentation finished!")
+    (org-tree-slide-header t)
+    (org-tree-slide-breadcrumbs " > ")
+    (org-image-actual-width nil))
+
+#+end_src
+
+* Generating a PDF of Slides
+
+Run =org-beamer-export-to-pdf=, requires =pdflatex= and associated tools though!
+
+More documentation: https://orgmode.org/worg/exporters/beamer/tutorial.html
+
