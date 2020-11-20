@@ -1,0 +1,231 @@
+#+title: Improving the EXWM Experience
+
+* Desktop.org
+
+Take a look at new Desktop.org file.  We have to update auto-tangle hook to accomodate this:
+
+#+begin_src emacs-lisp
+
+  ;; Automatically tangle our Emacs.org config file when we save it
+  (defun efs/org-babel-tangle-config ()
+    (when (string-equal (file-name-directory (buffer-file-name))
+                        (expand-file-name "~/.emacs.d/"))
+      ;; Dynamic scoping to the rescue
+      (let ((org-confirm-babel-evaluate nil))
+        (org-babel-tangle))))
+
+#+end_src
+
+Only load desktop.el when EXWM is needed in =start-exwm.sh=:
+
+#+begin_src sh
+
+  exec dbus-launch --exit-with-session emacs -mm --debug-init -l ~/.emacs.d/desktop.el
+
+#+end_src
+
+* Configuring EXWM after load
+
+Use =exwm-init-hook=:
+
+#+begin_src emacs-lisp
+
+  (defun efs/run-in-background (command)
+    (let ((command-parts (split-string command "[ ]+")))
+      (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
+
+  (defun dw/exwm-init-hook ()
+    ;; Make workspace 1 be the one where we land at startup
+    (exwm-workspace-switch-create 1)
+
+    ;; Open eshell by default
+    ;;(eshell)
+
+    ;; Launch apps that will run in the background
+    (efs/run-in-background "nm-applet"))
+
+
+#+end_src
+
+In =use-package exwm=:
+
+#+begin_src emacs-lisp
+
+    ;; When EXWM finishes initialization, do some extra setup
+    (add-hook 'exwm-init-hook #'efs/after-exwm-init)
+
+#+end_src
+
+* Setting a background image
+
+Install and run Compton:
+
+#+begin_src sh
+
+sudo apt install compton
+compton &
+
+#+end_src
+
+There's a newer program called Picom for this purpose, but it may not be in all Linux distributions.  Compton is pretty universal.
+
+Install and run feh:
+
+#+begin_src sh
+
+sudo apt install feh
+feh --bg-scale /usr/share/backgrounds/matt-mcnulty-nyc-2nd-ave.jpg
+
+#+end_src
+
+Set frame transparency and maximize windows by default.
+
+#+begin_src emacs-lisp
+
+  ;; Set frame transparency
+  (set-frame-parameter (selected-frame) 'alpha '(90 . 90))
+  (add-to-list 'default-frame-alist '(alpha . (90 . 90)))
+  (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+#+end_src
+
+Add to your configuration early in EXWM setup:
+
+#+begin_src emacs-lisp
+
+(defun efs/set-wallpaper ()
+  (interactive)
+  (start-process-shell-command
+   "feh" nil  "feh --bg-scale /usr/share/backgrounds/matt-mcnulty-nyc-2nd-ave.jpg"))
+
+#+end_src
+
+Run this function after running =xrandr= to make sure it stretches to screen size!
+
+#+begin_src emacs-lisp
+
+    ;; Set the wallpaper after setting screen resolution
+    (efs/set-wallpaper)
+
+#+end_src
+
+In start-exwm.sh:
+
+#+begin_src sh
+
+  # Enable screen compositing
+  compton &
+
+#+end_src
+
+* Using media keys
+
+Use the =desktop-environment= package!
+
+https://github.com/DamienCassou/desktop-environment
+
+#+begin_src emacs-lisp
+
+  (use-package desktop-environment
+    :after exwm
+    :config (desktop-environment-mode)
+    :custom
+    (desktop-environment-brightness-small-increment "2%+")
+    (desktop-environment-brightness-small-decrement "2%-")
+    (desktop-environment-brightness-normal-increment "5%+")
+    (desktop-environment-brightness-normal-decrement "5%-"))
+
+#+end_src
+
+Make sure to install dependencies:
+
+#+begin_src sh
+
+sudo apt install scrot brightnessctl playerctl
+
+#+end_src
+
+* Computer status and configuration
+
+** Tray apps
+
+Tray apps like blueman and pasystray:
+
+#+begin_src sh
+
+sudo apt install blueman pasystray pavucontrol
+
+#+end_src
+
+#+begin_src emacs-lisp
+
+    (efs/run-in-background "pavucontrol"))
+    (efs/run-in-background "blueman-applet"))
+
+#+end_src
+
+Make sure to add =exwm-systemtray-height= to make sure icons appear!
+
+#+begin_src emacs-lisp
+
+    (setq exwm-systemtray-height 32)
+
+#+end_src
+
+** Mode line status
+
+Battery and time display:
+
+#+begin_src emacs-lisp
+
+  ;; Show battery status in the mode line
+  (display-battery-mode 1)
+
+  ;; Show the time and date in modeline
+  (setq display-time-day-and-date t)
+  (display-time-mode 1)
+  ;; Also take a look at display-time-format and format-time-string
+
+#+end_src
+
+* Better app launcher
+
+Use =counsel-linux-app!=
+
+In your =use-package counsel:=
+
+#+begin_src emacs-lisp
+
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+
+#+end_src
+
+In your EXWM config:
+
+#+begin_src emacs-lisp
+
+    (exwm-input-set-key (kbd "s-SPC") 'counsel-linux-app)
+    (exwm-input-set-key (kbd "s-f") 'exwm-layout-toggle-fullscreen)
+
+#+end_src
+
+* Locking the screen
+
+Use =slock= and =xss-lock=!
+
+#+begin_src sh
+
+  sudo apt install slock xss-lock
+
+#+end_src
+
+Add this to =start-exwm.sh=:
+
+#+begin_src sh
+
+  # Enable screen locking on suspend
+  xss-lock -- slock &
+
+#+end_src
