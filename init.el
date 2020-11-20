@@ -190,7 +190,7 @@
   (visual-line-mode 1))
 
 (use-package org
-  :ensure org-plus-contrib
+  :pin org
   :hook (org-mode . efs/org-mode-setup)
   :config
   (setq org-ellipsis " ▾")
