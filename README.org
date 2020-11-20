@@ -28,6 +28,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
 
 1. [[https://www.youtube.com/watch?v=f7xB2fFk1tQ][Getting Started with EXWM]] ([[https://github.com/daviwil/emacs-from-scratch/blob/219c060e1bd695948c7691955a12a5dcaf3a9530/Emacs.org#window-management][Code]], [[file:show-notes/Emacs-Desktop-01.org][Notes]])
+2. [[https://youtu.be/9gfKrrTtyOk][Improving the EXWM Experience]] (Code, [[file:show-notes/Emacs-Desktop-02.org][Notes]])
 
 * Usage Instructions
 
