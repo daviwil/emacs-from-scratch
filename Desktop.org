@@ -7,7 +7,39 @@
 
 We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basis for our Emacs Desktop Environment.  The [[https://github.com/ch11ng/exwm/wiki][EXWM Wiki]] is a great place to find tips about how to configure everything!
 
+*NOTE:* Make sure you've installed =nm-applet=, =pasystray= and =blueman= for the system tray apps to work!
+
 #+begin_src emacs-lisp
+
+  (defun efs/run-in-background (command)
+    (let ((command-parts (split-string command "[ ]+")))
+      (apply #'call-process `(,(car command-parts) nil 0 nil ,@(cdr command-parts)))))
+
+  (defun efs/set-wallpaper ()
+    (interactive)
+    ;; NOTE: You will need to update this to a valid background path!
+    (start-process-shell-command
+        "feh" nil  "feh --bg-scale /usr/share/backgrounds/matt-mcnulty-nyc-2nd-ave.jpg"))
+
+  (defun efs/exwm-init-hook ()
+    ;; Make workspace 1 be the one where we land at startup
+    (exwm-workspace-switch-create 1)
+
+    ;; Open eshell by default
+    ;;(eshell)
+
+    ;; Show battery status in the mode line
+    (display-battery-mode 1)
+
+    ;; Show the time and date in modeline
+    (setq display-time-day-and-date t)
+    (display-time-mode 1)
+    ;; Also take a look at display-time-format and format-time-string
+
+    ;; Launch apps that will run in the background
+    (efs/run-in-background "nm-applet")
+    (efs/run-in-background "pasystray")
+    (efs/run-in-background "blueman-applet"))
 
   (defun efs/exwm-update-class ()
     (exwm-workspace-rename-buffer exwm-class-name))
@@ -20,16 +52,23 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     ;; When window "class" updates, use it to set the buffer name
     (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
 
+    ;; When EXWM starts up, do some extra confifuration
+    (add-hook 'exwm-init-hook #'efs/exwm-init-hook)
+
     ;; Rebind CapsLock to Ctrl
     (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
 
     ;; Set the screen resolution (update this to be the correct resolution for your screen!)
     (require 'exwm-randr)
     (exwm-randr-enable)
-    ;; (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
+    (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
+
+    ;; Set the wallpaper after changing the resolution
+    (efs/set-wallpaper)
 
     ;; Load the system tray before exwm-init
     (require 'exwm-systemtray)
+    (setq exwm-systemtray-height 32)
     (exwm-systemtray-enable)
 
     ;; These keys should always pass through to Emacs
@@ -77,11 +116,30 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
                             (exwm-workspace-switch-create ,i))))
                       (number-sequence 0 9))))
 
+    (exwm-input-set-key (kbd "s-SPC") 'counsel-linux-app)
+
     (exwm-enable))
 
 #+end_src
 
 * Desktop Environment
+
+** Desktop Key Bindings
+
+We use the [[https://github.com/DamienCassou/desktop-environment][desktop-environment]] package to automatically bind to well-known programs for controlling the volume, screen brightness, media playback, and doing other things like locking the screen and taking screenshots.  Make sure that you install the necessary programs to make this functionality work!  Check the [[https://github.com/DamienCassou/desktop-environment#default-configuration][default programs]] list to know what you need to install.
+
+#+begin_src emacs-lisp
+
+  (use-package desktop-environment
+    :after exwm
+    :config (desktop-environment-mode)
+    :custom
+    (desktop-environment-brightness-small-increment "2%+")
+    (desktop-environment-brightness-small-decrement "2%-")
+    (desktop-environment-brightness-normal-increment "5%+")
+    (desktop-environment-brightness-normal-decrement "5%-"))
+
+#+end_src
 
 ** Desktop File
 
@@ -117,8 +175,14 @@ This launcher script is invoked by =EXWM.desktop= to start Emacs and load our de
   # Set the screen DPI (uncomment this if needed!)
   # xrdb ~/.emacs.d/exwm/Xresources
 
+  # Run the screen compositor
+  compton &
+
+  # Enable screen locking on suspend
+  xss-lock -- slock &
+
   # Fire it up
-  exec dbus-launch --exit-with-session emacs -mm --debug-init
+  exec dbus-launch --exit-with-session emacs -mm --debug-init -l ~/.emacs.d/desktop.el
 
 #+end_src
 
