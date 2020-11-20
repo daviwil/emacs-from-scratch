@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Set the screen DPI (uncomment this if needed!)
 # xrdb ~/.emacs.d/exwm/Xresources
 
