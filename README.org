@@ -74,7 +74,7 @@ Most people don't use the CapsLock key (unless you like YELLING ON THE INTERNET)
 
 Here's how to do it across all 3 major operating systems:
 
-*Linux*
+*Linux X11*
 
 There are [[https://askubuntu.com/questions/33774/how-do-i-remap-the-caps-lock-and-ctrl-keys][many ways]] to accomplish this in Linux, but the easiest (and most repeatable) I've found is to use [[https://wiki.archlinux.org/index.php/Xmodmap][xmodmap]].  First, create a file named =.Xmodmap= in your home folder and populate it like so:
 
@@ -95,6 +95,17 @@ This replaces CapsLock with control and also replaces the Ctrl key on the right 
 xmodmap ~/.Xmodmap
 
 #+end_src
+
+*Linux sway*
+
+In your =~/.config/sway/config= file add this stanza and reload the config (usually $mod-Shift-c) or =swaymsg reload=:
+
+#+begin_src
+input * {
+xkb_options caps:ctrl_modifier
+}
+#+end_src
+
 
 *Windows*
 
