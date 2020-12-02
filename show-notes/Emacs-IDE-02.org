@@ -1,0 +1,167 @@
+* What we'll cover:
+
+- python-mode
+- lsp-mode
+- Debugging with dap-mode
+- Running tests with Projectile
+- Using virtualenv
+
+* Our example project
+
+https://github.com/mikf/gallery-dl
+
+** Installing requirements
+
+#+begin_src sh
+
+  pip install -r requirements.txt
+
+#+end_src
+
+* Using =python-mode=
+
+#+begin_src emacs-lisp
+
+  (use-package python-mode
+    :ensure nil
+    :custom
+    (python-shell-interpreter "python3"))
+
+#+end_src
+
+Commands:
+- Interactive Python shell: =M-x run-python= (=C-c C-p= or =g z= in evil-mode)
+- =python-shell-send-file= (=C-c C-l=)
+- =python-shell-send-buffer= (=C-c C-c=)
+- =python-shell-send-region= (=C-c C-r=)
+
+* Setting up lsp-mode
+
+** Installing =pyls=
+
+https://emacs-lsp.github.io/lsp-mode/page/languages/
+
+#+begin_src
+
+pip install --user python-language-server[all]
+
+#+end_src
+
+Ensure that it's on the =PATH=!  If not, you may need to add =~/.local/bin= to =PATH=
+
+** Activating lsp-mode
+
+We are starting with the =lsp-mode= configuration from "Build Your Own IDE with lsp-mode", check that out for more details on lsp-mode!
+
+#+begin_src emacs-lisp
+
+    :hook (python-mode . lsp-deferred))
+
+#+end_src
+
+** Completion error!
+
+If you see an error complaining about =company-capf=, this may be a bug with lsp-mode.
+
+As a workaround, run =package-reinstall= to reinstall =lsp-mode= and =lsp-ui= packages and then restart Emacs.
+
+* lsp-mode features
+
+** Completions
+** Documentation hover
+** Signature help
+** Linting / diagnostics - =flycheck-list-errors=
+** Code navigation - =lsp-find-definition= and =lsp-find-references=
+** Symbol renaming - =lsp-rename=
+** Code formatting - =lsp-format-buffer=
+** Symbol tree - =lsp-treemacs-symbols=
+
+* Running unit tests
+
+Using pytest:
+
+#+begin_src sh
+
+pip install pytest
+
+#+end_src
+
+Skip =test_results.py=, it's slow!
+
+Use Projectile's =projectile-test-project= command:
+
+- Set a directory-local variable for =projectile-project-test-cmd= with =add-dir-local-variable=
+- Set =compilation-read-command= to =nil= to skip asking every time you want to run the test (might be unsafe!)
+- You can use =g r= inside of the unit test buffer to rerun the tests or call =recompile= interactively
+
+Induce a failure!
+
+* Debugging
+
+I recommend watching "Emacs IDE - How to Debug Your Code with dap-mode" to learn more about the features!
+
+Configuration instructions: https://emacs-lsp.github.io/dap-mode/page/configuration/#python
+
+However, we will use =debugpy= (=ptvsd= is deprecated):
+
+#+begin_src sh
+
+pip install debugpy
+
+#+end_src
+
+#+begin_src emacs-lisp
+
+  (dap-python-debugger 'debugpy)
+
+#+end_src
+
+Run =dap-debug= and select the pytest configuration.  Fails due to python2!
+
+Set =dap-python-executable= to =python3=
+
+#+begin_src emacs-lisp
+
+  (dap-python-executable "python3")
+
+#+end_src
+
+Running the default pytest configuration doesn't launch from the correct path, let's edit the configuration with =dap-debug-edit-template=:
+
+#+begin_src emacs-lisp
+
+(dap-register-debug-template
+  "Python :: Run pytest (gallery-dl)"
+  (list :type "python"
+        :cwd "/home/daviwil/Projects/Code/gallery-dl"
+        :module "pytest"
+        :request "launch"
+	      :debugger 'debugpy
+        :name "Python :: Run pytest (gallery-dl)"))
+
+#+end_src
+
+However, this still doesn't work correctly from within a file in the project folder.  dap-mode bug?
+
+* Virtual Environments
+
+This part is only necessary if you use =virtualenv= in your Python development workflow!
+
+#+begin_src sh
+
+  virtualenv env
+  . env/bin/activate
+
+#+end_src
+
+Use =pyvenv= for setting up the right =virtualenv= in Emacs:
+
+#+begin_src emacs-lisp
+
+  (use-package pyvenv
+    :config
+    (pyvenv-mode 1))
+
+#+end_src
+
+Run =pyvenv-activate= and select the =env= folder, now =lsp-mode= and =dap-mode= will use it!
