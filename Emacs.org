@@ -11,12 +11,15 @@ The following variables are used to tweak some of the configuration pieces for u
 
 #+begin_src emacs-lisp
 
-;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
-;;       in Emacs and init.el will be generated automatically!
+  ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
+  ;;       in Emacs and init.el will be generated automatically!
 
-;; You will most likely need to adjust this font size for your system!
-(defvar efs/default-font-size 180)
-(defvar efs/default-variable-font-size 180)
+  ;; You will most likely need to adjust this font size for your system!
+  (defvar efs/default-font-size 180)
+  (defvar efs/default-variable-font-size 180)
+
+  ;; Make frame transparency overridable
+  (defvar efs/frame-transparency '(90 . 90))
 
 #+end_src
 
@@ -72,8 +75,8 @@ This section configures basic UI settings that remove unneeded elements to make 
   (global-display-line-numbers-mode t)
 
   ;; Set frame transparency
-  (set-frame-parameter (selected-frame) 'alpha '(90 . 90))
-  (add-to-list 'default-frame-alist '(alpha . (90 . 90)))
+  (set-frame-parameter (selected-frame) 'alpha efs/frame-transparency)
+  (add-to-list 'default-frame-alist `(alpha . ,efs/frame-transparency))
   (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
