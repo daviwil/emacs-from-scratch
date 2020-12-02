@@ -1,0 +1,120 @@
+#+title: How to Configure dap-mode
+
+* Basic Configuration
+
+- Per-language configuration: https://emacs-lsp.github.io/dap-mode/page/configuration/
+- Make sure lsp-mode is active otherwise `workspaceFolder` won't be available
+
+#+begin_src emacs-lisp
+
+(use-package dap-mode)
+
+#+end_src
+
+In your TypeScript / JavaScript configuration:
+
+#+begin_src emacs-lisp
+
+  (require 'dap-node)
+  (dap-node-setup) ;; Automatically installs Node debug adapter if needed
+
+#+end_src
+
+* Launching the Debugger
+
+- =dap-debug=: Select a template to execute
+- =dap-debug-last=: Run the most recent template
+- =dap-debug-recent=: Select a recent template to run
+- =dap-disconnect=: Disconnect from the debugging session (output buffer retained)
+- =dap-delete-session=: Delete the current session (output buffer will be deleted)
+- =dap-delete-all-sessions=: Clean up all debugging sessions
+
+* Creating a Debug Template
+
+- =dap-debug-edit-template=: Present a debug template for editing
+
+#+begin_src emacs-lisp
+
+(dap-register-debug-template
+  "Debug Server"
+  (list :type "node"
+        :request "launch"
+        :program "${workspaceFolder}/src/server/index.ts"
+        :outFiles ["${workspaceFolder}/public/src/server/**/*.js"]
+        :name "Debug Server"))
+
+#+end_src
+
+* Features
+
+** Breakpoints
+
+- =dap-breakpoint-toggle=: Toggle a breakpoint on the current line
+- =dap-breakpoint-delete-all=: Delete all breakpoints in the workspace
+- =dap-breakpoint-condition=: Set condition for breakpoint
+- =dap-breakpoint-hit-condition=: Set hit condition, number of hits before breakpoint stops
+- =dap-breakpoint-log-message=: Set log message for breakpoint (interpolate expressions with ={}=)
+- =dap-ui-breakpoints=: Show breakpoints panel
+
+** Hydra
+
+- =dap-hydra=: Quick panel for debugging commands
+- Keep in mind, the Hydra will capture keys unexpectedly (M-x, etc)
+- Automatically show Hydra when debugger stops:
+
+#+begin_src emacs-lisp
+
+:hook (dap-stopped . (lambda (arg) (call-interactively #'dap-hydra))))
+
+#+end_src
+
+** Locals
+
+** Expressions
+
+- =dap-ui-expressions-add=: Add a watch expression
+- =dap-ui-expressions-remove=: Remove a watch expression
+
+** REPL
+
+- =dap-ui-repl=: Start a debugging REPL for your language (if supported)
+- =M-n / M-p=: Go forward/back in REPL command history
+
+** Tooltips
+
+- =dap-tooltip-mode=: Turns it on
+- =dap-tooltip-at-point=: Show the value at the current point
+- Not working?
+
+** UI Controls
+
+** Loading VS Code debugging configurations
+
+If you're working in a project where other people use VS Code, this is valuable!
+
+- Use pre-created config
+
+* Configuration
+
+Here's how to customize the UI to show only what you care about
+
+- =dap-auto-configure-features=
+- OR
+- =lsp-enable-dap-auto-configure= and =dap-ui-mode=
+- =dap-auto-show-output=: If t (default), show output buffer when running
+- =dap-go-to-output-buffer=
+
+#+begin_src emacs-lisp
+
+(use-package dap-mode
+  :custom
+  (dap-auto-configure-features '(sessions locals tooltip))
+  :config
+  (setq lsp-enable-dap-auto-configure nil)
+  ;; (dap-ui-mode 1)
+  (general-define-key
+    :keymaps 'lsp-mode-map
+    :prefix lsp-keymap-prefix
+    "d" '(dap-hydra t :wk "debugger")))
+
+#+end_src

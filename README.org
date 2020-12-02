@@ -30,6 +30,11 @@ Here is a list of all the episode videos with links to the configuration we buil
 1. [[https://www.youtube.com/watch?v=f7xB2fFk1tQ][Getting Started with EXWM]] ([[https://github.com/daviwil/emacs-from-scratch/blob/219c060e1bd695948c7691955a12a5dcaf3a9530/Emacs.org#window-management][Code]], [[file:show-notes/Emacs-Desktop-01.org][Notes]])
 2. [[https://youtu.be/9gfKrrTtyOk][Improving the EXWM Experience]] ([[https://github.com/daviwil/emacs-from-scratch/blob/2805904966dbd5810ee735e25c4b427014761be5/Desktop.org][Code]], [[file:show-notes/Emacs-Desktop-02.org][Notes]])
 
+** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNvsrtk_iZSb94krGRofFjN][Emacs IDE]]
+
+1. [[https://youtu.be/0bilcQVSlbM][How to Debug Your Code with dap-mode]] ([[https://github.com/daviwil/emacs-from-scratch/blob/210e517353abf4ed669bc40d4c7daf0fabc10a5c/Emacs.org#debugging-with-dap-mode][Code]], [[file:show-notes/Emacs-IDE-01.org][Notes]])
+2. [[https://youtu.be/jPXIP46BnNA][Python Development Configuration]] (Code, [[file:show-notes/Emacs-IDE-02.org][Notes]])
+
 * Usage Instructions
 
 *IMPORTANT:* Be sure to read the commentary in [[file:Emacs.org][Emacs.org]] in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!
