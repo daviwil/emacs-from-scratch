@@ -33,7 +33,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNvsrtk_iZSb94krGRofFjN][Emacs IDE]]
 
 1. [[https://youtu.be/0bilcQVSlbM][How to Debug Your Code with dap-mode]] ([[https://github.com/daviwil/emacs-from-scratch/blob/210e517353abf4ed669bc40d4c7daf0fabc10a5c/Emacs.org#debugging-with-dap-mode][Code]], [[file:show-notes/Emacs-IDE-01.org][Notes]])
-2. [[https://youtu.be/jPXIP46BnNA][Python Development Configuration]] (Code, [[file:show-notes/Emacs-IDE-02.org][Notes]])
+2. [[https://youtu.be/jPXIP46BnNA][Python Development Configuration]] ([[https://github.com/daviwil/emacs-from-scratch/blob/dd9320769f3041ac1edca139496f14abe147d010/Emacs.org#python][Code]], [[file:show-notes/Emacs-IDE-02.org][Notes]])
 
 * Usage Instructions
 
