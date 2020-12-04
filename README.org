@@ -29,7 +29,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 
 1. [[https://www.youtube.com/watch?v=f7xB2fFk1tQ][Getting Started with EXWM]] ([[https://github.com/daviwil/emacs-from-scratch/blob/219c060e1bd695948c7691955a12a5dcaf3a9530/Emacs.org#window-management][Code]], [[file:show-notes/Emacs-Desktop-01.org][Notes]])
 2. [[https://youtu.be/9gfKrrTtyOk][Improving the EXWM Experience]] ([[https://github.com/daviwil/emacs-from-scratch/blob/2805904966dbd5810ee735e25c4b427014761be5/Desktop.org][Code]], [[file:show-notes/Emacs-Desktop-02.org][Notes]])
-3. [[https://youtu.be/HGGU5Zvljj8][Optimizing Window Placement in EXWM]] (Code, [[file:show-notes/Emacs-Desktop-03.org][Notes]])
+3. [[https://youtu.be/HGGU5Zvljj8][Optimizing Window Placement in EXWM]] ([[https://github.com/daviwil/emacs-from-scratch/blob/39f63fe133cd4c41e13bbd1551c6517162851411/Desktop.org#exwm-configuration][Code]], [[file:show-notes/Emacs-Desktop-03.org][Notes]])
 
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNvsrtk_iZSb94krGRofFjN][Emacs IDE]]
 
