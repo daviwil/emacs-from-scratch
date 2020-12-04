@@ -68,12 +68,12 @@
 
 (use-package general
   :config
-  (general-create-definer rune/leader-keys
+  (general-create-definer efs/leader-keys
     :keymaps '(normal insert visual emacs)
     :prefix "SPC"
     :global-prefix "C-SPC")
 
-  (rune/leader-keys
+  (efs/leader-keys
     "t"  '(:ignore t :which-key "toggles")
     "tt" '(counsel-load-theme :which-key "choose theme")))
 
@@ -166,7 +166,7 @@
   ("k" text-scale-decrease "out")
   ("f" nil "finished" :exit t))
 
-(rune/leader-keys
+(efs/leader-keys
   "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 (defun efs/org-font-setup ()
