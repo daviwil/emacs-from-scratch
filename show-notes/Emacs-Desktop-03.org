@@ -1,0 +1,108 @@
+#+title: Optimizing Window Placement in EXWM
+
+* Customizing buffer name based on window title
+
+#+begin_src emacs-lisp
+
+  (defun efs/exwm-update-title ()
+    (pcase exwm-class-name
+      ("Firefox" (exwm-workspace-rename-buffer (format "Firefox: %s" exwm-title)))))
+
+    ;; When window title updates, use it to set the buffer name
+    (add-hook 'exwm-update-title-hook #'efs/exwm-update-title)
+
+#+end_src
+
+* Configuring windows when they appear
+
+Use the =exwm-manage-finish-hook=:
+
+#+begin_src emacs-lisp
+
+  (defun efs/configure-window-by-class ()
+    (interactive)
+    (message "Window '%s' appeared!" exwm-class))
+
+    ;; Configure windows as they're created
+    (add-hook 'exwm-manage-finish-hook #'efs/configure-window-by-class)
+
+#+end_src
+
+** Sending programs to specific workspaces
+
+#+begin_src emacs-lisp
+
+    (pcase exwm-class-name
+      ("Firefox" (exwm-workspace-move-window 2))
+      ("Sol" (exwm-workspace-move-window 3))))
+
+#+end_src
+
+** Making windows float automatically
+
+Use the =exwm-floating-toggle-floating= command (=C-c C-t C-f=)
+
+#+begin_src emacs-lisp
+
+      ("mpv" (exwm-floating-toggle-floating))
+
+#+end_src
+
+** Hide the mode line
+
+Use the =exwm-layout-toggle-mode-line= command (=C-c C-t RET=)
+
+#+begin_src emacs-lisp
+
+      ("mpv" (exwm-floating-toggle-floating)
+             (exwm-layout-toggle-mode-line))
+
+#+end_src
+
+** Resizing a floating window
+
+- =exwm-layout-enlarge-window[-horizontally]= - Make a window larger by a number of pixels
+- =exwm-layout-shrink-window[-horizontally]= - Make a window smaller by a number of pixels
+- =frame-pixel-width= / =frame-pixel-height= functions - get pixel width and height of the frame
+
+** Positioning a floating window
+
+- =exwm-floating-move= - Move a window based on a delta
+- =x-display-pixel-width= / =x-display-pixel-height= - Get the width and height of the display
+
+** Automatically enter char-mode
+
+- Use =exwm-reset= to toggle back to line-mode (bound to =s-r= in our configuration)
+- Use =C-c C-k= (=exwm-input-release-keyboard= to toggle back to char-mode)
+
+* Automatically move windows between workspaces
+
+#+begin_src emacs-lisp
+
+  ;; Automatically move EXWM buffer to current workspace when selected
+  (setq exwm-layout-show-all-buffers t)
+
+  ;; Display all EXWM buffers in every workspace buffer list
+  (setq exwm-workspace-show-all-buffers t)
+
+#+end_src
+
+* Automatically hiding the minibuffer
+
+EXWM enables you to "detach" the minibuffer so that you can auto-hide it with =exwm-workspace-toggle-minibuffer=:
+
+*NOTE*: You must restart EXWM for this to take effect!
+
+#+begin_src emacs-lisp
+
+    ;; Detach the minibuffer (show it with exwm-workspace-toggle-minibuffer)
+    (setq exwm-workspace-minibuffer-position 'bottom)
+
+#+end_src
+
+* Miscellaneous packages I mentioned:
+
+- Dynamic tiling like xmonad or dwm using Edwina: https://github.com/ajgrf/edwina
+- Hiding the mode line for all Emacs buffers: https://github.com/hlissner/emacs-hide-mode-line
+- Showing mode line details in the mini buffer: https://github.com/kiennq/emacs-mini-modeline
+- Showing Ivy commands in a centered frame: https://github.com/tumashu/ivy-posframe

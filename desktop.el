@@ -31,6 +31,27 @@
 (defun efs/exwm-update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
 
+(defun efs/exwm-update-title ()
+  (pcase exwm-class-name
+    ("Firefox" (exwm-workspace-rename-buffer (format "Firefox: %s" exwm-title)))))
+
+;; This function isn't currently used, only serves as an example how to
+;; position a window
+(defun efs/position-window ()
+  (let* ((pos (frame-position))
+         (pos-x (car pos))
+          (pos-y (cdr pos)))
+
+    (exwm-floating-move (- pos-x) (- pos-y))))
+
+(defun efs/configure-window-by-class ()
+  (interactive)
+  (pcase exwm-class-name
+    ("Firefox" (exwm-workspace-move-window 2))
+    ("Sol" (exwm-workspace-move-window 3))
+    ("mpv" (exwm-floating-toggle-floating)
+           (exwm-layout-toggle-mode-line))))
+
 (use-package exwm
   :config
   ;; Set the default number of workspaces
@@ -39,11 +60,30 @@
   ;; When window "class" updates, use it to set the buffer name
   (add-hook 'exwm-update-class-hook #'efs/exwm-update-class)
 
+  ;; When window title updates, use it to set the buffer name
+  (add-hook 'exwm-update-title-hook #'efs/exwm-update-title)
+
+  ;; Configure windows as they're created
+  (add-hook 'exwm-manage-finish-hook #'efs/configure-window-by-class)
+
   ;; When EXWM starts up, do some extra confifuration
   (add-hook 'exwm-init-hook #'efs/exwm-init-hook)
 
   ;; Rebind CapsLock to Ctrl
   (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+
+  ;; NOTE: Uncomment the following two options if you want window buffers
+  ;;       to be available on all workspaces!
+
+  ;; Automatically move EXWM buffer to current workspace when selected
+  ;; (setq exwm-layout-show-all-buffers t)
+
+  ;; Display all EXWM buffers in every workspace buffer list
+  ;; (setq exwm-workspace-show-all-buffers t)
+
+  ;; NOTE: Uncomment this option if you want to detach the minibuffer!
+  ;; Detach the minibuffer (show it with exwm-workspace-toggle-minibuffer)
+  ;;(setq exwm-workspace-minibuffer-position 'top)
 
   ;; Set the screen resolution (update this to be the correct resolution for your screen!)
   (require 'exwm-randr)
