@@ -36,6 +36,10 @@ Here is a list of all the episode videos with links to the configuration we buil
 1. [[https://youtu.be/0bilcQVSlbM][How to Debug Your Code with dap-mode]] ([[https://github.com/daviwil/emacs-from-scratch/blob/210e517353abf4ed669bc40d4c7daf0fabc10a5c/Emacs.org#debugging-with-dap-mode][Code]], [[file:show-notes/Emacs-IDE-01.org][Notes]])
 2. [[https://youtu.be/jPXIP46BnNA][Python Development Configuration]] ([[https://github.com/daviwil/emacs-from-scratch/blob/dd9320769f3041ac1edca139496f14abe147d010/Emacs.org#python][Code]], [[file:show-notes/Emacs-IDE-02.org][Notes]])
 
+** Emacs Tips
+
+1. [[https://youtu.be/gbdE7oZEdtA][How to Create and Manage Multiple Windows]] ([[file:show-notes/Emacs-Tips-05.org][Notes]])
+
 * Usage Instructions
 
 *IMPORTANT:* Be sure to read the commentary in [[file:Emacs.org][Emacs.org]] in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!

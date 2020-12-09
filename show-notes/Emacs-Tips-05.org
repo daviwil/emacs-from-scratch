@@ -1,0 +1,162 @@
+#+title: How to Create and Manage Multiple Windows
+
+* Windows and Frames
+
+- A "window" is a region within an Emacs frame that shows a particular buffer
+- A "frame" is an Emacs program window at the level of your OS or desktop environment which can hold multiple windows
+- Multiple windows can show the same buffer, but with different scroll, selection, etc
+
+Check out the Emacs manual entry for [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Windows.html#Windows][Multiple Windows]]
+
+* Basic Window Operations
+
+Each item lists the default Emacs binding followed by the evil-mode binding.  Note that many of the evil-mode bindings also allow you to use Ctrl with the second key in the sequence!
+
+| Command                             | Key   | Description                            |
+|-------------------------------------+-------+----------------------------------------|
+| =delete-window=                       | ~C-x 0~ | Close the current window               |
+| =delete-other-windows=                | ~C-x 1~ | Close all other windows                |
+| =split-window-below=                  | ~C-x 2~ | Split the current window horizonally   |
+| =split-window-right=                  | ~C-x 3~ | Split the current window vertically    |
+| =shrink-window-horizontally=          | ~C-x {~ | Make the window smaller horizontally   |
+| =enlarge-window-horizontally=         | ~C-x }~ | Make the window bigger horizontally    |
+| =shrink-window=                       | None! | Shrink the window vertically           |
+| =shrink-window-if-larger-than-buffer= | ~C-x -~ | Shrink the window vertically to buffer |
+| =balance-windows=                     | ~C-x +~ | Balance the sizes of all windows       |
+
+*TIP*: You can use ~C-u~ (=universal-argument=) and a numeric prefix before running the =shrink= and =enlarge= commands to dictate the mount by which the window is resized.
+
+** evil-mode alternatives
+
+| Command                | Key        | Description                             |
+|------------------------+------------+-----------------------------------------|
+| =evil-window-delete=     | ~C-w C-c~    | Close the current window                |
+| =delete-other-windows=   | ~C-w C-o~    | Close all other windows                 |
+| =evil-window-split=      | ~C-w C-s~    | Split the current window horizontally   |
+| =evil-window-vsplit=     | ~C-w C-v~    | Split the current window vertically     |
+| =evil-window-set-width=  | ~C-w (pipe)~ | Use numeric prefix to set window width  |
+| =evil-window-set-height= | ~C-w _~      | Use numeric prefix to set window height |
+| =balance-windows=        | ~C-w =~      | Balance the sizes of all windows        |
+
+*TIP*: You can use a numeric argument before running =evil-window-set-width= and =evil-window-set-height= to specify the desired size of the window.
+
+* "Other window" operations
+
+| Command                  | Keys    | Description                                      |
+|--------------------------+---------+--------------------------------------------------|
+| =other-window=             | ~C-x o~   | Select the next visible window                   |
+| =find-file-other-window=   | ~C-x 4 f~ | Open a file in another window                    |
+| =dired-other-window=       | ~C-x 4 d~ | Open Dired in another window                     |
+| =dired-jump-other-window=  | ~C-x 4 j~ | Open Dired in another window at location of file |
+| =scroll-other-window=      | ~M-pgdn~  | Scroll the other window down without focusing it |
+| =scroll-other-window-down= | ~M-pgup~  | Scroll the other window up without focusing it   |
+
+** evil-mode alternatives
+
+| Command           | Keys    | Description                        |
+|-------------------+---------+------------------------------------|
+| =evil-window-next=  | ~C-w C-w~ | Select the next visible window     |
+| =evil-window-prev=  | ~C-w W~   | Select the previous visible window |
+| =ffap-other-window= | ~C-w C-f~ | Open a file in another window      |
+
+*** More =other-window= commands
+
+Learn about more =other-window= commands:
+
+- Check out the ~C-x 4~ prefix with =which-key=!
+- Also, use =counsel-M-x= and search for any commands with =other-window= in the name!
+
+* Defaulting to vertical splits
+
+You can default to vertical splits for "other windows" with the following config:
+
+#+begin_src emacs-lisp
+
+  (setq split-height-threshold nil)
+  (setq split-width-threshold 0)
+
+#+end_src
+
+More information about controlling [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Choosing-Window-Options.html][how buffers are displayed]] in the Emacs manual.
+
+* Windmove for moving between windows
+
+Windmove comes with Emacs, but is missing some features in Emacs 26.
+
+- =windmove-up/down/left/right= - Focus the window next to the current in the specified direction
+- =windmove-swap-states-up/down/left/right= - "Move" the current buffer to the window in the specified direction
+
+** evil-mode equivalents
+
+evil-mode provides its own functions for moving between windows:
+
+- =evil-window-left= - ~C-w h~
+- =evil-window-right= - ~C-w l~
+- =evil-window-up= - ~C-w k~
+- =evil-window-down= - ~C-w j~
+
+* buffer-move or moving buffers between windows
+
+Use =buffer-move= for a more general solution:
+
+- =buf-move=: Turn on a mode where you can move the current buffer around with arrow keys, any other key finishes it
+- =buf-move-left=
+- =buf-move-right=
+- =buf-move-up=
+- =buf-move-down=
+
+#+begin_src emacs-lisp
+
+  (use-package buffer-move)
+
+#+end_src
+
+* winner-mode
+
+=winner-mode= provides useful functions for undoing and redoing window configurations:
+
+- =winner-undo= (~C-c left~ or ~C-w u~ bound below)
+- =winner-redo= (~C-c right~ or ~C-w U~ bound below)
+
+#+begin_src emacs-lisp
+
+  (use-package winner-mode
+    :ensure nil
+    :bind (:map evil-window-map
+           ("u" . winner-undo)
+           ("U" . winner-redo))
+    :config
+    (winner-mode))
+
+#+end_src
+
+* Packages for moving between windows
+** ace-window
+
+[[https://github.com/abo-abo/ace-window][ace-window]] makes it easy to jump between visible windows in your Emacs frame, just run the =ace-window= command and press the number displayed in the upper left corner of the window you want to switch to.  It also enables you to swap, delete, and move windows using similar functionality.
+
+#+begin_src emacs-lisp
+
+  (use-package ace-window)
+
+#+end_src
+
+Tip from *Cedrif Daf*: Set =aw-keys= to home-row keys for more convenience:
+
+#+begin_src emacs-lisp
+
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+
+#+end_src
+
+** winum-mode
+
+This mode shows numbers in your windows' mode lines to tell you what keys you can press after using the key binding =C-x w=.  Check out the [[https://github.com/deb0ch/emacs-winum][winum-mode]] page for more useful tips!
+
+#+begin_src emacs-lisp
+
+  (use-package winum
+    :config
+    (winum-mode))
+
+#+end_src
