@@ -52,6 +52,13 @@
     ("mpv" (exwm-floating-toggle-floating)
            (exwm-layout-toggle-mode-line))))
 
+;; This function should be used only after configuring autorandr!
+(defun efs/update-displays ()
+  (efs/run-in-background "autorandr --change --force")
+  (efs/set-wallpaper)
+  (message "Display config: %s"
+           (string-trim (shell-command-to-string "autorandr --current"))))
+
 (use-package exwm
   :config
   ;; Set the default number of workspaces
@@ -90,6 +97,15 @@
   (exwm-randr-enable)
   (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
 
+  ;; This will need to be updated to the name of a display!  You can find
+  ;; the names of your displays by looking at arandr or the output of xrandr
+  (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
+
+  ;; NOTE: Uncomment these lines after setting up autorandr!
+  ;; React to display connectivity changes, do initial display update
+  ;; (add-hook 'exwm-randr-screen-change-hook #'efs/update-displays)
+  ;; (efs/update-displays)
+
   ;; Set the wallpaper after changing the resolution
   (efs/set-wallpaper)
 
@@ -97,6 +113,13 @@
   (require 'exwm-systemtray)
   (setq exwm-systemtray-height 32)
   (exwm-systemtray-enable)
+
+  ;; Automatically send the mouse cursor to the selected workspace's display
+  (setq exwm-workspace-warp-cursor t)
+
+  ;; Window focus should follow the mouse pointer
+  (setq mouse-autoselect-window t
+        focus-follows-mouse t)
 
   ;; These keys should always pass through to Emacs
   (setq exwm-input-prefix-keys
