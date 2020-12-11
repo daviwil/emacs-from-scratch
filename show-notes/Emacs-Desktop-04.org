@@ -1,0 +1,122 @@
+#+title: Using Multiple Monitors in EXWM
+
+* How multiple monitors work in EXWM
+
+- EXWM can use multiple displays via the =exwm-randr= module
+- It doesn't configure the displays for you, though!
+- Use xrandr, arandr, etc
+- Configure EXWM to assign workspaces to displays
+
+* Differences from other WMs
+
+- Workspaces do not span multiple screens
+- Switching to a workspace moves your focus to the display it is assigned to
+
+* Enabling another display
+
+Use =arandr=, save configuration, use it to update =xrandr= call in Desktop.org.
+
+* Workspace monitor assignment
+
+Tell EXWM which workspaces should be on other displays:
+
+#+begin_src emacs-lisp
+
+  (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
+
+#+end_src
+
+*NOTE:* Use =exwm-randr-refresh= to update workspace configuration after changing this!
+
+* Mouse warping
+
+Doesn't work on VM, but does work on actual system config
+
+#+begin_src emacs-lisp
+
+  (setq exwm-workspace-warp-cursor t)
+
+#+end_src
+
+* Focus follows mouse
+
+*NOTE:* These need to be configure before =exwm-enable=!
+
+#+begin_src emacs-lisp
+
+  (setq mouse-autoselect-window t
+        focus-follows-mouse t)
+
+#+end_src
+
+* Docking and undocking
+
+What happens when you disconnect your display?
+
+Use =autorandr= to automate this!  https://github.com/phillipberndt/autorandr
+
+With your laptop undocked and single screen configured correctly, run:
+
+#+begin_src sh
+
+autorandr --save mobile
+
+#+end_src
+
+Dock your machine and set up the ideal configuration with arandr then run:
+
+#+begin_src sh
+
+autorandr --save docked
+
+#+end_src
+
+Define  a function for handling display connectivity changes:
+
+#+begin_src emacs-lisp
+
+  (defun efs/update-displays ()
+    (efs/run-in-background "autorandr --change --force")
+    (message "Display config: %s"
+             (string-trim (shell-command-to-string "autorandr --current"))))
+
+#+end_src
+
+Add this after =(exwm-randr-enable)=:
+
+#+begin_src emacs-lisp
+
+  ;; React to display connectivity changes, do initial display update
+  (add-hook 'exwm-randr-screen-change-hook #'efs/update-displays)
+  (efs/update-displays)
+
+#+end_src
+
+Also make sure to update your wallpaper after changing screens!
+
+#+begin_src emacs-lisp
+
+    ;; Inside efs/update-displays
+    (efs/set-wallpaper)
+
+#+end_src
+
+*NOTE:* If you don't have access to =autorandr= you can create scripts with =arandr= that you can launch per machine when the screen layout changes.
+
+An example from my config: https://github.com/daviwil/dotfiles/blob/master/.bin/update-screens
+
+* Per-machine configuration
+
+Save =autorandr= profiles for each machine (e.g. =machine1-docked=, =machine1-mobile=, etc)
+
+#+begin_src emacs-lisp
+
+  (setq exwm-randr-workspace-monitor-plist
+    (pcase (system-name)
+      ("machine1" '(2 "Virtual-2" 3 "Virtual-2"))
+      ("machine2" '(2 "HDMI-1" 3 "HDM1-2"))))
+  (exwm-randr-refresh)
+
+#+end_src
+
+*NOTE:* If you dock your laptop in more than one place with different screen configurations, you can use =autorandr --current= to determine the current configuration and set the =exwm-randr-workspace-monitor-plist= based on that instead!
