@@ -1,0 +1,74 @@
+#+title: Organize Your Windows with the Tab Bar Emacs 27
+
+* What is it?
+
+- New feature in Emacs 27
+- Manage window configurations as "tabs"
+- Basically provides support for workspaces in Emacs!
+- Different than =tab-line-mode=
+
+Manual: https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html
+
+* How is it useful?
+
+- Separate workspaces for different tasks
+- One tab per project
+- A tab for your Org notes and agenda, split vertically
+- A tab for chat or ERC
+
+* Basic Usage
+
+- =tab-bar-mode= - Enable display of the tab bar
+- =tab-new= (~C-x t 2~) - Create a new tab
+- =tab-next= (~C-x t o~, evil: ~g t~) - Move to the next tab (also known as =tab-bar-switch-to-next-tab=)
+- =tab-bar-switch-to-prev-tab= (evil: ~g T~) - Switch to the previous tab
+- =tab-rename= (~C-x t r~) - Rename the current tab (or numbered tab with prefix arg)
+- =tab-close= (~C-x t 0~) - Close the current tab
+- =tab-close-other= (~C-x t 1~) - Close other tabs
+- =tab-bar-undo-close-tab= - Reopen the last closed tab
+- =tab-move= (~C-x t m~) - Move the current tab to the right (or left with negative prefix)
+- =tab-bar-select-tab-by-name= (~C-x t RET~) - Select tab by name using completion
+
+* Configuring operation
+
+- =tab-bar-new-tab-choice= - The name of a buffer or file to display in new tabs
+- =tab-bar-new-tab-to= - Where to place new tabs (left or right of current) - Also a function!
+- =tab-bar-tab-name-function= - Control how new tabs are named (can prompt for a name!)
+
+#+begin_src emacs-lisp
+
+  (setq tab-bar-new-tab-choice "*scratch*")
+
+#+end_src
+
+* Configuring tab-bar appearance
+
+- =tab-bar-close-button-show= - Show or hide the close button
+- =tab-bar-new-button-show= - Show or hide the new button at the end
+- =tab-bar-button-relief= - Control pixel width of tab bar button appearance
+
+- =tab-bar= face - customize text of tabs
+- =tab-bar-tab= face - customize the color of the active tab
+- =tab-bar-tab-inactive= face - customize the color of inactive tabs
+
+#+begin_src emacs-lisp
+
+  (setq tab-bar-close-button-show nil
+        tab-bar-new-button-show nil)
+
+#+end_src
+
+* Using tab-bar-mode without showing the bar
+
+#+begin_src emacs-lisp
+
+;; Don't turn on tab-bar-mode when tabs are created
+(setq tab-bar-show nil)
+
+;; Get the current tab name for use in some other display
+(defun efs/current-tab-name ()
+  (alist-get 'name (tab-bar--current-tab)))
+
+#+end_src
+
+One downside to this is that =doom-modeline= (currently) stops showing the tab name in the mode line when =tab-bar-mode= isn't turned on.
