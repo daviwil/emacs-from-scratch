@@ -1,0 +1,47 @@
+#+title: Dynamic Tiling Windows in Emacs with Edwina
+
+https://github.com/ajgrf/edwina
+
+* What is it?
+
+- Edwina is a dynamic tiling window manager for Emacs
+- Provides master/stack window layout like dwm or Xmonad
+- Experimental!
+
+Thanks to *X VNA* for suggesting this package!
+
+* Setting it up
+
+#+begin_src emacs-lisp
+
+  (use-package edwina
+    :ensure t
+    :config
+    (setq display-buffer-base-action '(display-buffer-below-selected))
+    ;; (edwina-setup-dwm-keys)
+    (edwina-mode 1))
+
+#+end_src
+
+* Keybindings
+
+By default these keys are prefixed with =C-c C-w=. Customize =edwina-keymap-prefix= to change the prefix.
+
+|-------------+--------------------------------------|
+| Binding     | Action                               |
+|-------------+--------------------------------------|
+| =r=, =C-r=      | Arrange windows                      |
+| =n=, =C-n=, =SPC= | Move to next window                  |
+| =p=, =C-p=      | Move to previous window              |
+| =N=, =C-S-n=    | Swap places with the next window     |
+| =P=, =C-S-p=    | Swap places with the previous window |
+| =%=, ={=, =[=     | Decrease the size of the master area |
+| =^=, =}=, =]=     | Increase the size of the master area |
+| =d=, =C-d=      | Decrease number of windows in master |
+| =i=           | Increase number of windows in master |
+| =k=, =C-k=      | Delete window                        |
+| =RET=         | Cycle window to/from master area     |
+| =c=, =C-c=      | Clone current window                 |
+|-------------+--------------------------------------|
+
+*TIP:* Set up =dwm=-inspired keys with =(edwina-setup-dwm-keys)=

@@ -41,6 +41,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 
 1. [[https://youtu.be/gbdE7oZEdtA][How to Create and Manage Multiple Windows]] ([[file:show-notes/Emacs-Tips-05.org][Notes]])
 2. [[https://youtu.be/C7ZlNRbWdVI][Organize Your Windows with the Tab Bar in Emacs 27]] ([[file:show-notes/Emacs-Tips-06.org][Notes]])
+3. [[https://youtu.be/_qXZNfRcNnw][Dynamic Tiling Windows in Emacs with Edwina]] ([[file:show-notes/Emacs-Tips-07.org][Notes]])
 
 * Usage Instructions
 
