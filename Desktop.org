@@ -28,13 +28,18 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     ;; Open eshell by default
     ;;(eshell)
 
+    ;; NOTE: The next two are disabled because we now use Polybar!
+
     ;; Show battery status in the mode line
-    (display-battery-mode 1)
+    ;;(display-battery-mode 1)
 
     ;; Show the time and date in modeline
-    (setq display-time-day-and-date t)
-    (display-time-mode 1)
+    ;;(setq display-time-day-and-date t)
+    ;;(display-time-mode 1)
     ;; Also take a look at display-time-format and format-time-string
+
+    ;; Start the Polybar panel
+    (efs/start-panel)
 
     ;; Launch apps that will run in the background
     (efs/run-in-background "nm-applet")
@@ -122,10 +127,11 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     ;; Set the wallpaper after changing the resolution
     (efs/set-wallpaper)
 
+    ;; NOTE: This is disabled because we now use Polybar!
     ;; Load the system tray before exwm-init
-    (require 'exwm-systemtray)
-    (setq exwm-systemtray-height 32)
-    (exwm-systemtray-enable)
+    ;; (require 'exwm-systemtray)
+    ;; (setq exwm-systemtray-height 32)
+    ;; (exwm-systemtray-enable)
 
     ;; Automatically send the mouse cursor to the selected workspace's display
     (setq exwm-workspace-warp-cursor t)
@@ -270,5 +276,190 @@ The =Xresources= file will be used with =xrdb= in =start-exwm.sh= to set our scr
 #+begin_src conf :tangle ./exwm/Xresources
 
   Xft.dpi:   100   # Set this to your desired DPI!  Larger number means bigger text and UI
+
+#+end_src
+
+** Panel with Polybar
+
+Polybar provides a great, minimalistic panel for your EXWM desktop configuration.  The following config integrates =emacsclient= and Polybar with =polybar-msg= to enable you to gather *any* information from Emacs and display it in the panel!
+
+Check out the Polybar wiki for more details on how to configure it: https://github.com/polybar/polybar/wiki
+
+#+begin_src emacs-lisp
+
+  ;; Make sure the server is started (better to do this in your main Emacs config!)
+  (server-start)
+
+  (defvar efs/polybar-process nil
+    "Holds the process of the running Polybar instance, if any")
+
+  (defun efs/kill-panel ()
+    (interactive)
+    (when efs/polybar-process
+      (ignore-errors
+        (kill-process efs/polybar-process)))
+    (setq efs/polybar-process nil))
+
+  (defun efs/start-panel ()
+    (interactive)
+    (efs/kill-panel)
+    (setq efs/polybar-process (start-process-shell-command "polybar" nil "polybar panel")))
+
+  (defun efs/send-polybar-hook (module-name hook-index)
+    (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+
+  (defun efs/send-polybar-exwm-workspace ()
+    (efs/send-polybar-hook "exwm-workspace" 1))
+
+  ;; Update panel indicator when workspace changes
+  (add-hook 'exwm-workspace-switch-hook #'efs/send-polybar-exwm-workspace)
+
+#+end_src
+
+The configuration for our ingeniously named panel, "panel".  Invoke it with =polybar panel= on the command line!
+
+#+begin_src conf :tangle ~/.config/polybar/config :mkdirp yes
+
+; Docs: https://github.com/polybar/polybar
+;==========================================================
+
+[settings]
+screenchange-reload = true
+
+[global/wm]
+margin-top = 0
+margin-bottom = 0
+
+[colors]
+background = #f0232635
+background-alt = #576075
+foreground = #A6Accd
+foreground-alt = #555
+primary = #ffb52a
+secondary = #e60053
+alert = #bd2c40
+underline-1 = #c792ea
+
+[bar/panel]
+width = 100%
+height = 35
+offset-x = 0
+offset-y = 0
+fixed-center = true
+enable-ipc = true
+
+background = ${colors.background}
+foreground = ${colors.foreground}
+
+line-size = 2
+line-color = #f00
+
+border-size = 0
+border-color = #00000000
+
+padding-top = 5
+padding-left = 1
+padding-right = 1
+
+module-margin = 1
+
+font-0 = "Cantarell:size=18:weight=bold;2"
+font-1 = "Font Awesome:size=14;2"
+font-2 = "Material Icons:size=20;5"
+font-3 = "Fira Mono:size=13;-3"
+
+modules-left = exwm-workspace
+modules-right = cpu temperature battery date
+
+tray-position = right
+tray-padding = 2
+tray-maxsize = 28
+
+cursor-click = pointer
+cursor-scroll = ns-resize
+
+[module/exwm-workspace]
+type = custom/ipc
+hook-0 = emacsclient -e "exwm-workspace-current-index" | sed -e 's/^"//' -e 's/"$//'
+initial = 1
+format-underline = ${colors.underline-1}
+format-padding = 1
+
+[module/cpu]
+type = internal/cpu
+interval = 2
+format = <label> <ramp-coreload>
+format-underline = ${colors.underline-1}
+click-left = emacsclient -e "(proced)"
+label = %percentage:2%%
+ramp-coreload-spacing = 0
+ramp-coreload-0 = ▁
+ramp-coreload-0-foreground = ${colors.foreground-alt}
+ramp-coreload-1 = ▂
+ramp-coreload-2 = ▃
+ramp-coreload-3 = ▄
+ramp-coreload-4 = ▅
+ramp-coreload-5 = ▆
+ramp-coreload-6 = ▇
+
+[module/date]
+type = internal/date
+interval = 5
+
+date = "%a %b %e"
+date-alt = "%A %B %d %Y"
+
+time = %l:%M %p
+time-alt = %H:%M:%S
+
+format-prefix-foreground = ${colors.foreground-alt}
+format-underline = ${colors.underline-1}
+
+label = %date% %time%
+
+[module/battery]
+type = internal/battery
+battery = BAT0
+adapter = ADP1
+full-at = 98
+time-format = %-l:%M
+
+label-charging = %percentage%% / %time%
+format-charging = <animation-charging> <label-charging>
+format-charging-underline = ${colors.underline-1}
+
+label-discharging = %percentage%% / %time%
+format-discharging = <ramp-capacity> <label-discharging>
+format-discharging-underline = ${self.format-charging-underline}
+
+format-full = <ramp-capacity> <label-full>
+format-full-underline = ${self.format-charging-underline}
+
+ramp-capacity-0 = 
+ramp-capacity-1 = 
+ramp-capacity-2 = 
+ramp-capacity-3 = 
+ramp-capacity-4 = 
+
+animation-charging-0 = 
+animation-charging-1 = 
+animation-charging-2 = 
+animation-charging-3 = 
+animation-charging-4 = 
+animation-charging-framerate = 750
+
+[module/temperature]
+type = internal/temperature
+thermal-zone = 0
+warn-temperature = 60
+
+format = <label>
+format-underline = ${colors.underline-1}
+format-warn = <label-warn>
+format-warn-underline = ${self.format-underline}
+
+label = %temperature-c%
+label-warn = %temperature-c%!
+label-warn-foreground = ${colors.secondary}
 
 #+end_src
