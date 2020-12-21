@@ -1,0 +1,252 @@
+#+title: Unlock the Power of the Daemon with emacsclient
+
+* What is the Emacs daemon?
+
+Emacs can be run in a server mode:
+
+- Pay Emacs startup cost only once per boot/login!
+- Buffers persist across Emacs frames, can close Emacs window and reopen later
+- Execute arbitrary commands and expressions from the command line
+
+Manual:
+https://www.gnu.org/software/emacs/manual/html_node/emacs/Emacs-Server.html#Emacs-Server
+
+* Starting the daemon
+
+The easiest way to get started is to use the following command inside of a running Emacs session
+
+#+begin_src emacs-lisp
+
+  ;; Enable server mode (daemon) for this Emacs session
+  (server-start)
+
+#+end_src
+
+However, this is *very* different in practice than running Emacs as a real daemon!  We'll show why in a bit.
+
+#+begin_src sh
+
+  emacs --daemon
+
+  # OR run as a foreground process (can be helpful to diagnose errors)
+
+  emacs --fg-daemon
+
+#+end_src
+
+You can also have independent daemons:
+
+#+begin_src sh
+
+  # Start daemon named 'my-other-daemon'
+  emacs --daemon=my-other-daemon
+
+#+end_src
+
+* Trying it out
+
+Let's try running the Emacs daemon and see how it differs from running Emacs normally.
+
+Run Emacs normally first to get a sense of the startup time.
+
+#+begin_src emacs-lisp
+
+  emacs
+
+#+end_src
+
+Now run it as a daemon and notice how fast =emacsclient= creates a new frame:
+
+#+begin_src sh
+
+  emacs --fg-daemon
+
+  emacsclient -c
+
+#+end_src
+
+Notice anything different about the UI?
+
+*TIP*: You can find the list of active daemon names (sockets) by looking in the directory stored in the =server-socket-dir= variable in Emacs!
+
+** Killing the Emacs daemon
+
+To kill the Emacs daemon, send the =(kill-emacs)= command to it:
+
+#+begin_src emacs-lisp
+
+  emacsclient -e "(kill-emacs)"
+
+#+end_src
+
+* Adjusting configuration for the daemon
+
+We have to make some tweaks to ensure
+
+** Don't use =window-system= to check for your OS
+
+Use the =system-type= variable instead!  =window-system= will be =nil= when your configuration loads in the daemon.
+
+#+begin_src emacs-lisp
+
+  (pcase system-type
+    ('gnu/linux "It's Linux!")
+    ('windows-nt "It's Windows!")
+    ('darwin "It's macOS!"))
+
+#+end_src
+
+** Checking if config is being loaded in the daemon
+
+If you want to check if your config is being loaded up in the daemon, use the =daemonp= function.  *Useful tip*: =daemonp= will return the name of the daemon if you gave it one with the =--daemon=name= parameter!  This can allow you to skip loading certain sections of your config for a particular daemon name.
+
+#+begin_src emacs-lisp
+
+  (if (daemonp)
+      (message "Loading in the daemon!")
+      (message "Loading in regular Emacs!"))
+
+#+end_src
+
+** Configuring the UI for new frames
+
+One common issue when using Emacs as a daemon is that fonts seem to not work correctly when starting a new frame using =emacsclient=.  If you run =set-face-attribute= in the frame, the font will be applied to future frames too.
+
+Fixing this requires some tweaks to configuration:
+
+#+begin_src emacs-lisp
+
+  (defun efs/set-font-faces ()
+    (message "Setting faces!")
+    (set-face-attribute 'default nil :font "Fira Code Retina" :height efs/default-font-size)
+
+    ;; Set the fixed pitch face
+    (set-face-attribute 'fixed-pitch nil :font "Fira Code Retina" :height efs/default-font-size)
+
+    ;; Set the variable pitch face
+    (set-face-attribute 'variable-pitch nil :font "Cantarell" :height efs/default-variable-font-size :weight 'regular))
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions
+                (lambda (frame)
+                  ;; (setq doom-modeline-icon t)
+                  (with-selected-frame frame
+                    (efs/set-font-faces))))
+      (efs/set-font-faces))
+
+#+end_src
+
+In *Emacs 27* you can use =server-after-make-frame-hook= so that your function only gets called once!
+
+Another useful pair of variables:
+
+- =initial-frame-alist=: Frame parameters to set on the first frame
+- =default-frame-alist=: Frame parameters to apply to every frame
+
+These can both be used to configure UI elements that don't work well when configuration is loaded in the daemon.
+
+Manual: https://www.gnu.org/software/emacs/manual/html_node/emacs/Frame-Parameters.html
+
+** Fixing doom-modeline icons
+
+doom-modeline needs some help to figure out that icons can be used.  Add this to your configuration:
+
+#+begin_src sh
+
+  (setq doom-modeline-icon t)
+
+#+end_src
+
+* Using emacsclient
+
+Manual:
+https://www.gnu.org/software/emacs/manual/html_node/emacs/emacsclient-Options.html#emacsclient-Options
+
+** Important arguments
+
+- ~-c~ / ~--create-frame~ - Create a new frame (don't pass this if you want to reuse the same open frame)
+- ~-n~ / ~--no-wait~ - Don't wait for the Emacs frame to close
+- ~-e~ / ~--eval~ - Evaluate an Emacs Lisp expression within the daemon
+- ~-u~ / ~--suppress-output~ - Suppress output from Emacs (useful when running in a script)
+- ~-s~ / ~--socket-name=name~ - Use a named daemon (=emacs --daemon=name=)
+- ~-a~ / ~--alternate-editor=name~ - If Emacs daemon isn't running, use this command instead
+- ~filename~ - Open a file in the current frame (or a new one if ~-c~ is passed)
+
+** Opening files from the command line
+
+To open a new Emacs frame for a file without waiting for emacsclient to exit:
+
+#+begin_src emacs-lisp
+
+  emacsclient -c -n ~/.emacs.d/Emacs.org
+
+#+end_src
+
+Set =EDITOR= to =emacsclient= in your shell's profile (=.bash_profile=, =.zsh_profile=, etc)
+
+#+begin_src sh
+
+  export EDITOR="emacsclient -c -a emacs"
+
+#+end_src
+
+Test this by using =git commit= (use ~C-x #~ to confirm your edit and close the frame!)
+
+** Evaluating expressions
+
+This makes it easy to integrate other programs with Emacs!
+
+#+begin_src sh
+
+  emacsclient -e "(buffer-name)"
+
+#+end_src
+
+You can also run interactive commands to cause something to happen in the active Emacs frame:
+
+#+begin_src sh
+
+emacsclient -e "(counsel-switch-buffer)"
+
+emacsclient -e "(read-string \"Enter a string: \")"
+
+#+end_src
+
+** Automating Emacs in shell scripts
+
+Example: [[file:~/.dotfiles/.bin/sync-dotfiles::emacsclient -u -e "(org-save-all-org-buffers)" -a "echo 'Emacs is not currently running'"][My =sync-dotfiles= script]] ([[https://github.com/daviwil/dotfiles/blob/master/.bin/sync-dotfiles#L15][Web]])
+
+#+begin_src sh
+
+  emacsclient -u -e "(org-save-all-org-buffers)" -a "echo 'Emacs is not currently running'"
+
+#+end_src
+
+** Offloading tasks to another daemon
+
+I don't necessarily recommend this approach, but it is possible!
+
+#+begin_src emacs-lisp
+
+  emacs --daemon=worker
+  emacsclient -f worker -u -e "(org-babel-tangle-file \"~/.emacs.d/Emacs.org\")"
+
+#+end_src
+
+I'd recommend checking out the =async= package if you want to do things like this, though:
+
+https://github.com/jwiegley/emacs-async/
+
+We'll cover it in another video.
+
+* Running Emacs at Startup
+
+Emacs comes with a =systemd= unit file:
+
+#+begin_src sh
+
+  sudo systemctl --user enable emacs
+
+#+end_src
+
+If you're allergic to =systemd= (or just want another way to run at login), you can possibly add it to the startup configuration for your desktop environment, profile script, etc.
