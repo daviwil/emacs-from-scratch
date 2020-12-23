@@ -1,0 +1,148 @@
+#+title: Give Emacs Psychic Completion Powers with prescient.el
+
+Video link: https://youtu.be/T9kygXveEz0
+
+* Completions are everywhere
+
+- M-x
+- describe-variable / describe-function
+- find-file
+- switch-to-buffer
+- company-mode
+
+It saves time to make the list of recommendations more tailored to your usage!
+
+* Enter prescient.el
+
+Prescient is a sorting and filtering extension for Ivy, =company-mode=, and Selectrum.  It provides:
+
+- Sorting candidates based on how frequently you select them
+- Configurable filtering rules to quickly find what you're looking for
+
+* Ivy
+
+Since we've been using Ivy in the configuration for this channel, let's try Prescient with it.
+
+First, try =M-x= without Prescient turned on, then install =ivy-prescient= (make sure to load it after Counsel!)
+
+#+begin_src emacs-lisp
+
+  (use-package ivy-prescient
+    :after counsel
+    :config
+    (ivy-prescient-mode 1))
+
+#+end_src
+
+Now run =M-x= again and take a look at the results.  Select a command, then run =M-x= again, see that it is suggested first!
+
+Prescient is remembering the selections you've made for =M-x= (or =counsel-M-x= in this case) and it sorts them first based on some configurable rules:
+
+- =prescient-history-length=: How many chosen candidates will be remembered
+- =prescient-frequency-decay=: A multiplier applied to each frequent candidate each selection (default: =0.997=)
+- =prescient-frequency-threshold=: Threshold used for "forgetting" a command that isn't used frequently anymore (default: =0.5=)
+
+*NOTE*: These variables apply to all usages of Prescient, not just for Ivy!
+
+** Trying Prescient with other Ivy commands
+
+- =counsel-find-file=
+- =counsel-describe-variable=
+- =counsel-switch-buffer= - Doesn't work!
+
+** Excluding certain Ivy commands from sorting
+
+- Commands to exclude: =ivy-prescient-sort-commands=
+
+By default it contains =ivy-switch-buffer= which =counsel-switch-buffer= uses internally.
+
+** Disabling length-based sorting
+
+You might have noticed =M-x= is now sorting all commands by shortest-first.  If this is distracting to you, it can be disabled!
+
+#+begin_src emacs-lisp
+
+  (setq prescient-sort-length-enable nil)
+
+#+end_src
+
+** Changing the filtering method
+
+Set =prescient-filter-method=:
+
+#+begin_src emacs-lisp
+
+  ;; This is the default value!
+  (setq prescient-filter-method '(literal regexp fuzzy))
+
+#+end_src
+
+- =literal:= the subquery must be a substring of the candidate. Supports char folding.
+
+- =initialism:= the subquery must match a substring of the initials of the candidate.
+
+- =prefix:= words (substrings of only word characters) match the beginning of words found in the candidate, in order, separated by the same non-word characters that separate words in the query. This is similar to the completion style partial or what you get from Ivy by default
+
+- =anchored:= words are separated by capital letters or symbols, with capital letters being the start of a new word. This is similar to prefix, but allows for less typing.
+
+- =fuzzy=: the characters of the subquery must match some subset of those of the candidate, in the correct order but not necessarily contiguous.
+
+- =regexp:= the subquery is interpreted directly as a regular expression. (Try =^p\w+d=)
+
+** Going back to Ivy's filtering
+
+If you are too used to Ivy's filtering styles, you can use those while still keeping Prescient's sorting:
+
+#+begin_src emacs-lisp
+
+  (setq ivy-prescient-enable-filtering nil)
+
+#+end_src
+
+*NOTE:* Make sure you toggle =ivy-prescient-mode= after setting this for it to take effect!
+
+** Getting the old highlighting back
+
+=ivy-prescient= changes how results are highlighted when you start typing.  To emulate the old highlighting you can use =ivy-prescient-retain-classic-highlighting=:
+
+#+begin_src emacs-lisp
+
+  (setq ivy-prescient-retain-classic-highlighting t)
+
+#+end_src
+
+* Company Mode
+
+Prescient also has an extension for Company to provide candidate sorting based on frequency:
+
+#+begin_src emacs-lisp
+
+  (use-package company-prescient
+    :after company
+    :config
+    (company-prescient-mode 1))
+
+#+end_src
+
+*NOTE:* Prescient filtering is not applied to company-mode!  It would require a custom completion backend.
+
+* Remembering history between sessions
+
+Remembering your history is great, but it's even better when it is remembered each time you start Emacs:
+
+#+begin_src emacs-lisp
+
+    ;; Remember candidate frequencies across sessions
+    (prescient-persist-mode 1)
+
+#+end_src
+
+* With all that said...
+
+=ivy-prescient= needs a new maintainer: https://github.com/raxod502/prescient.el/issues/65
+
+If you like using Prescient with Ivy, consider helping out!
+
+* Selectrum
+
+We will talk about Selectrum in another video; we'll hook it up to Prescient then!

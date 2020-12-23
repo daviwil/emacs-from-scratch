@@ -148,6 +148,15 @@
   :config
   (counsel-mode 1))
 
+(use-package ivy-prescient
+  :after counsel
+  :custom
+  (ivy-prescient-enable-filtering nil)
+  :config
+  ;; Uncomment the following line to have sorting remembered across sessions!
+  ;(prescient-persist-mode 1)
+  (ivy-prescient-mode 1))
+
 (use-package helpful
   :custom
   (counsel-describe-function-function #'helpful-callable)
