@@ -15,13 +15,18 @@
   ;; Open eshell by default
   ;;(eshell)
 
+  ;; NOTE: The next two are disabled because we now use Polybar!
+
   ;; Show battery status in the mode line
-  (display-battery-mode 1)
+  ;;(display-battery-mode 1)
 
   ;; Show the time and date in modeline
-  (setq display-time-day-and-date t)
-  (display-time-mode 1)
+  ;;(setq display-time-day-and-date t)
+  ;;(display-time-mode 1)
   ;; Also take a look at display-time-format and format-time-string
+
+  ;; Start the Polybar panel
+  (efs/start-panel)
 
   ;; Launch apps that will run in the background
   (efs/run-in-background "nm-applet")
@@ -109,10 +114,11 @@
   ;; Set the wallpaper after changing the resolution
   (efs/set-wallpaper)
 
+  ;; NOTE: This is disabled because we now use Polybar!
   ;; Load the system tray before exwm-init
-  (require 'exwm-systemtray)
-  (setq exwm-systemtray-height 32)
-  (exwm-systemtray-enable)
+  ;; (require 'exwm-systemtray)
+  ;; (setq exwm-systemtray-height 32)
+  ;; (exwm-systemtray-enable)
 
   ;; Automatically send the mouse cursor to the selected workspace's display
   (setq exwm-workspace-warp-cursor t)
@@ -178,3 +184,30 @@
   (desktop-environment-brightness-small-decrement "2%-")
   (desktop-environment-brightness-normal-increment "5%+")
   (desktop-environment-brightness-normal-decrement "5%-"))
+
+;; Make sure the server is started (better to do this in your main Emacs config!)
+(server-start)
+
+(defvar efs/polybar-process nil
+  "Holds the process of the running Polybar instance, if any")
+
+(defun efs/kill-panel ()
+  (interactive)
+  (when efs/polybar-process
+    (ignore-errors
+      (kill-process efs/polybar-process)))
+  (setq efs/polybar-process nil))
+
+(defun efs/start-panel ()
+  (interactive)
+  (efs/kill-panel)
+  (setq efs/polybar-process (start-process-shell-command "polybar" nil "polybar panel")))
+
+(defun efs/send-polybar-hook (module-name hook-index)
+  (start-process-shell-command "polybar-msg" nil (format "polybar-msg hook %s %s" module-name hook-index)))
+
+(defun efs/send-polybar-exwm-workspace ()
+  (efs/send-polybar-hook "exwm-workspace" 1))
+
+;; Update panel indicator when workspace changes
+(add-hook 'exwm-workspace-switch-hook #'efs/send-polybar-exwm-workspace)
