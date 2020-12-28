@@ -29,6 +29,7 @@
   (efs/start-panel)
 
   ;; Launch apps that will run in the background
+  (efs/run-in-background "dunst")
   (efs/run-in-background "nm-applet")
   (efs/run-in-background "pasystray")
   (efs/run-in-background "blueman-applet"))
@@ -211,3 +212,15 @@
 
 ;; Update panel indicator when workspace changes
 (add-hook 'exwm-workspace-switch-hook #'efs/send-polybar-exwm-workspace)
+
+(defun efs/disable-desktop-notifications ()
+  (interactive)
+  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_PAUSE\""))
+
+(defun efs/enable-desktop-notifications ()
+  (interactive)
+  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_RESUME\""))
+
+(defun efs/toggle-desktop-notifications ()
+  (interactive)
+  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_TOGGLE\""))
