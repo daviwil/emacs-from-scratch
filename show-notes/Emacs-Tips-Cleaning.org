@@ -1,0 +1,113 @@
+#+title: Teach Emacs to Keep Your Folders Clean
+
+* Have you noticed these files before?
+
+- =Emacs.org~=
+- =#Emacs.org#=
+- =.#Emacs.org=
+- =~/.emacs.d/.lsp-session-v1=
+- =~/.emacs.d/transient/=
+- =~/.emacs.d/projectile-bookmarks.eld=
+
+Emacs and the packages we use create a lot of "temporary" files for various reasons.
+
+Let's keep our folders clean!
+
+* Backup Files
+
+Everyone sees these files, they get created when you edit a file and save it.  (This [[https://stackoverflow.com/questions/56915816/emacs-does-not-backup-files-in-git-repo/56916567#56916567][doesn't happen]] in VC-controlled repos, though!)
+
+#+begin_src emacs-lisp
+
+  (setq backup-directory-alist `(("." . ,(expand-file-name "tmp/backups/" user-emacs-directory))))
+
+#+end_src
+
+*NOTE:* You'll have to clean up any previous backup files that were created!
+
+You can also turn off this behavior entirely:
+
+#+begin_src emacs-lisp
+
+  (setq make-backup-files nil)
+
+#+end_src
+
+More info: https://www.gnu.org/software/emacs/manual/html_node/emacs/Backup.html
+
+* Auto Save Files
+
+=auto-save-mode= will create temporary files in the same folder as edited files: =#Emacs.org#=
+
+You can change this using =auto-save-file-name-transforms=:
+
+#+begin_src emacs-lisp
+
+  ;; auto-save-mode doesn't create the path automatically!
+  (make-directory (expand-file-name "tmp/auto-saves/" user-emacs-directory) t)
+
+  (setq auto-save-list-file-prefix (expand-file-name "tmp/auto-saves/sessions/" user-emacs-directory)
+        auto-save-file-name-transforms `((".*" ,(expand-file-name "tmp/auto-saves/" user-emacs-directory) t)))
+
+#+end_src
+
+More info: https://www.gnu.org/software/emacs/manual/html_node/emacs/Auto-Save-Files.html#Auto-Save-Files
+
+* Lock Files
+
+These are the files that look like =.#Emacs.org=.  They appear when you have unsaved changes to a file in a buffer!
+
+Unfortunately these can't be moved, but they can be disabled:
+
+#+begin_src emacs-lisp
+
+  (setq create-lockfiles nil)
+
+#+end_src
+
+I don't recommend setting this across your whole configuration but it can be useful in certain projects where these files cause trouble.  Use directory-local variables for this!
+
+More information: https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Locks.html
+
+* Files created by packages
+
+Projectile, =lsp-mode=, and other packages create their own files to store variables and state!
+
+#+begin_src emacs-lisp
+
+  (setq projectile-known-projects-file (expand-file-name "tmp/projectile-bookmarks.eld" user-emacs-directory)
+        lsp-session-file (expand-file-name "tmp/.lsp-session-v1" user-emacs-directory))
+
+#+end_src
+
+* An easy fix
+
+Many files are created relative to =user-emacs-directory= already!  We can change it in our config:
+
+#+begin_src emacs-lisp
+
+  (setq user-emacs-directory (expand-file-name "~/.cache/emacs"))
+
+#+end_src
+
+*NOTE:* You will need to move all of your current transient files to this new location!
+
+However, this isn't 100% reliable; you'll need to chase down the files created by modes and packages you use.
+
+* No Littering!
+
+One community-maintained solution for this is the package =no-littering=:
+
+https://github.com/emacscollective/no-littering
+
+Even if you don't want to use it, the [[https://github.com/emacscollective/no-littering/blob/master/no-littering.el][settings it applies]] are very useful to learn what you might want to set!
+
+#+begin_src emacs-lisp
+
+  (use-package no-littering)
+
+#+end_src
+
+*NOTE:* You need to use this very early in your configuration otherwise it won't work as expected!
+
+Now you can add the =var/= and =etc/= folders in your =user-emacs-directory= to your =.gitignore=!

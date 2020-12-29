@@ -53,6 +53,25 @@ Emacs has a built in package manager but it doesn't make it easy to automaticall
 
 #+end_src
 
+* Keep Folders Clean
+
+We use the [[https://github.com/emacscollective/no-littering/blob/master/no-littering.el][no-littering]] package to keep folders where we edit files and the Emacs configuration folder clean!  It knows about a wide variety of variables for built in Emacs features as well as those from community packages so it can be much easier than finding and setting these variables yourself.
+
+#+begin_src emacs-lisp
+
+  ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
+  ;; reliably, set `user-emacs-directory` before loading no-littering!
+  ;(setq user-emacs-directory "~/.cache/emacs")
+
+  (use-package no-littering)
+
+  ;; no-littering doesn't set this by default so we must place
+  ;; auto save files in the same path as it uses for sessions
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+
+#+end_src
+
 * Basic UI Configuration
 
 This section configures basic UI settings that remove unneeded elements to make Emacs look a lot more minimal and modern.  If you're just getting started in Emacs, the menu bar might be helpful so you can remove the =(menu-bar-mode -1)= line if you'd like to still see that.
