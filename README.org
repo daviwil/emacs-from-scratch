@@ -46,6 +46,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 3. [[https://youtu.be/_qXZNfRcNnw][Dynamic Tiling Windows in Emacs with Edwina]] ([[file:show-notes/Emacs-Tips-07.org][Notes]])
 4. [[https://youtu.be/ZjCRxAMPdNc][Unlock the Power of the Daemon with emacsclient]] ([[file:show-notes/Emacs-Tips-08.org][Notes]])
 5. [[https://youtu.be/T9kygXveEz0][Give Emacs Psychic Completion Powers with prescient.el]] ([[file:show-notes/Emacs-Tips-Prescient.org][Notes]])
+6. [[https://youtu.be/XZjyJG-sFZI][Teach Emacs to Keep Your Folders Clean]] (Code, [[file:show-notes/Emacs-Tips-Cleaning.org][Notes]])
 
 * Usage Instructions
 
