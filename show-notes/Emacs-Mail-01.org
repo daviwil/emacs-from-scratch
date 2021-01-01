@@ -1,0 +1,344 @@
+#+title: Streamline Your E-mail Management with mu4e
+
+* mu4e is an excellent e-mail client
+
+https://www.djcbsoftware.nl/code/mu/mu4e.html
+
+- Emacs interface for the =mu= mail indexer
+- Highly efficient for keyboard users
+- Syncs your e-mail in the background using an external program
+- Powerful search interface
+- Can manage multiple e-mail accounts
+
+Today we'll cover syncing your e-mail and how you can read and manage it all with mu4e.
+
+Future episodes will cover topics like multiple e-mail accounts, composing e-mail, Org Mode integration, and more.
+
+*IMPORTANT NOTE*: I'm using Ubuntu 20 for this demonstration, it has an older mu4e version (1.2.0).  Some things may be different in the newest version, I will discuss difference where appropriate.
+
+* Syncing your mail
+
+** Configuring mbsync
+
+Today we'll sync a Gmail account since they're pretty common.  In another episode we'll show a more traditional IMAP account too.
+
+We'll use a program called =isync= (in practice it's =mbsync=!) to sync our mail.  You can also use a program called =offlineimap=, it's a bit slower but it works on Windows too.  We'll cover it in another video.
+
+Install it:
+
+#+begin_src sh
+
+  sudo apt install isync
+
+#+end_src
+
+Set up an initial configuration at =~/.mbsyncrc=:
+
+#+begin_src conf
+
+  IMAPAccount gmail
+  Host imap.gmail.com
+  User systemcrafters.test@gmail.com
+  PassCmd "cat ~/.oh-no-insecure-password"
+  SSLType IMAPS
+  CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+  IMAPStore gmail-remote
+  Account gmail
+
+  MaildirStore gmail-local
+  Subfolders Verbatim
+  Path ~/Mail/
+  Inbox ~/Mail/Inbox
+
+  Channel gmail
+  Master :gmail-remote:
+  Slave :gmail-local:
+  Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
+  Create Both
+  SyncState *
+
+#+end_src
+
+*NOTE*: Be careful of how you manage whitespace between lines in this file, the spaces define groupings!
+
+Settings you may need to change:
+
+- =PassCmd= - We're getting the contents of a plain text file here, you might want to use gpg!
+- =Pass= - If you want to use plaintext password (not recommended!), doesn't need quotation marks
+- =CertificateFile= - This location can vary based on your Linux distribution!
+- =Patterns= - Defines which folders will be synced
+
+For the security conscious:
+
+- Use GPG to decrypt an encrypted password file: =gpg --quiet --for-your-eyes-only --no-tty --decrypt ~/.passwords/gmail.gpg=
+- Use the Password Store program to simplify this: =pass Mail/MyGmail=
+
+** Enable IMAP for your Gmail account
+
+IMAP e-mail access is not enabled on your Gmail account by default!  Follow these steps to enable it:
+
+https://support.google.com/mail/answer/7126229?hl=en
+
+Make sure to configure these settings!
+
+- "Auto-expunge off"
+- "Move the message to the trash"
+
+** Enable access for mbsync
+
+This can go one of two ways:
+
+*** You have two-factor authentication turned on:
+
+If you have two-factor authentication turned on, you will need to create an App Password to access your account.  More details can be found at this link:
+
+https://support.google.com/accounts/answer/185833
+
+*** No two-factor authentication: enable "Less secure apps" for your Google account
+
+If you don't have two-factor authentication turned on, Google will still automatically block "less secure" apps like =isync= from accessing your mail over IMAP.  Give access to mbsync by going to the following page:
+
+https://myaccount.google.com/lesssecureapps
+
+** Start the initial sync
+
+You might receive a scary e-mail from Google the first time you run this, just open it and confirm that it was you who tried to use the account!
+
+#+begin_src sh
+
+  mbsync -a
+
+#+end_src
+
+*NOTE*: =mbsync= won't create the base maildir for you, you'll have to create it: =mkdir ~/Mail=
+
+* Setting up mu to index the mailbox
+
+Install it on Ubuntu via the =mu4e= package (it's actually the dependency =maildir-utils= but we need =mu4e= anyway):
+
+#+begin_src sh
+
+  sudo apt install mu4e
+
+#+end_src
+
+Run the initial index, providing your e-mail address so it knows how to identify you:
+
+#+begin_src sh
+
+  mu index --maildir=~/Mail --my-address=systemcrafters.test@gmail.com
+
+#+end_src
+
+*NOTE*: You will need to use =--my-address= for every e-mail address you use in a multiple account setup.
+
+Indexing could take a while depending on how much e-mail you have, but it's quite fast in general.
+
+* Setting up mu4e
+
+Before we do this though, turn off =evil-collection= for =mu4e=.
+
+*NOTE*: I'm only doing this to show the normal Emacs bindings, don't do this if you want to use Evil bindings!
+
+#+begin_src emacs-lisp
+
+    (delete 'mu4e evil-collection-mode-list)
+    (delete 'mu4e-conversation evil-collection-mode-list)
+
+#+end_src
+
+Add the initial =mu4e= configuration:
+
+#+begin_src emacs-lisp
+
+  (use-package mu4e
+    :ensure nil
+    ;; :load-path "/usr/share/emacs/site-lisp/mu4e/"
+    ;; :defer 20 ; Wait until 20 seconds after startup
+    :config
+
+    ;; This is set to 't' to avoid mail syncing issues when using mbsync
+    (setq mu4e-change-filenames-when-moving t)
+
+    ;; Refresh mail using isync every 10 minutes
+    (setq mu4e-update-interval (* 10 60))
+    (setq mu4e-get-mail-command "mbsync -a")
+    (setq mu4e-maildir "~/Mail")
+
+    (setq mu4e-drafts-folder "/[Gmail]/Drafts")
+    (setq mu4e-sent-folder   "/[Gmail]/Sent Mail")
+    (setq mu4e-refile-folder "/[Gmail]/All Mail")
+    (setq mu4e-trash-folder  "/[Gmail]/Trash")
+
+    (setq mu4e-maildir-shortcuts
+        '(("/Inbox"             . ?i)
+          ("/[Gmail]/Sent Mail" . ?s)
+          ("/[Gmail]/Trash"     . ?t)
+          ("/[Gmail]/Drafts"    . ?d)
+          ("/[Gmail]/All Mail"  . ?a))))
+
+#+end_src
+
+*NOTE*: In the stream, I had trouble getting mail to sync in other folders.  The problem was that I had configured the folder names wrong with mu4e!  I was using =/[Gmail].Trash= where it should have been =/[Gmail]/Trash=.  Simple explanation for an annoying problem!
+
+*IMPORTANT NOTE*: As of mu4e 1.3.7, =mu4e-maildir-shortcuts= now has a new format!  Here is the equivalent:
+
+#+begin_src emacs-lisp
+
+    (setq mu4e-maildir-shortcuts
+        '((:maildir "/Inbox"    :key ?i)
+          (:maildir "/[Gmail]/Sent Mail" :key ?s)
+          (:maildir "/[Gmail]/Trash"     :key ?t)
+          (:maildir "/[Gmail]/Drafts"    :key ?d)
+          (:maildir "/[Gmail]/All Mail"  :key ?a))))
+
+#+end_src
+
+More Gmail configuration tips: https://www.djcbsoftware.nl/code/mu/mu4e/Gmail-configuration.html
+
+* Managing your e-mail
+
+** Reading mail
+
+Run =mu4e=, see the landing page.
+
+When reading mail, you start out in the Headers buffer.  When you select an email with ~RET~, the View buffer is displayed in a window below the Headers buffer window.
+
+*** Headers Mode
+
+Key Bindings:
+
+| Key | Evil  | Command                             | Description                          |
+|-----+-------+-------------------------------------+--------------------------------------|
+|     |       | *Movement*                            |                                      |
+| ~C-n~ | ~j~     | =next-line=                           | Moves to the next header line        |
+| ~C-p~ | ~k~     | =previous-line=                       | Moves to the previous header line    |
+| ~[[~  | ~[[~    | =mu4e-headers-prev-unread=            | Moves to previous unread message     |
+| ~]]~  | ~]]~    | =mu4e-headers-next-unread=            | Moves to next unread message         |
+| ~j~   | ~J~     | =mu4e~headers-jump-to-maildir=        | Jump to another mail directory       |
+|     |       |                                     |                                      |
+|     |       | *Toggles*                             |                                      |
+| ~P~   | ~zt~    | =mu4e-headers-toggle-threading=       | Toggles threaded message display     |
+| ~W~   | ~zr~    | =mu4e-headers-toggle-include-related= | Toggles related message display      |
+|     |       |                                     |                                      |
+|     |       | *Marking*                             |                                      |
+| ~d~   | ~d~     | =mu4e-headers-mark-for-trash=         | Marks message for deletion           |
+| ~m~   | ~m~     | =mu4e-headers-mark-for-move=          | Marks message for move to folder     |
+| ~+~   | ~+~     | =mu4e-headers-mark-for-flag=          | Marks message for flagging           |
+| ~-~   | ~-~     | =mu4e-headers-mark-for-unflag=        | Marks message for unflagging         |
+| ~%~   | ~%~     | =mu4e-headers-mark-pattern=           | Marks based on a regex pattern       |
+| ~u~   | ~u~     | =mu4e-headers-mark-for-unmark=        | Removes mark for message             |
+| ~U~   | ~U~     | =mu4e-mark-unmark-all=                | Unmarks all marks in the view        |
+| ~x~   | ~x~     | =mu4e-mark-execute-all=               | Executes all marks in the view       |
+|     |       |                                     |                                      |
+|     |       | *Searching*                           |                                      |
+| ~s~   | ~s~     | =mu4e-headers-search=                 | Search all e-mails                   |
+| ~S~   | ~S~     | =mu4e-headers-search-edit=            | Edit current search (useful!)        |
+| ~/~   | ~/~     | =mu4e-headers-search-narrow=          | Narrow down the current results      |
+| ~b~   | ~b~     | =mu4e-headers-search-bookmark=        | Select a bookmark to search with     |
+| ~B~   | ~B~     | =mu4e-headers-search-bookmark-edit=   | Edit bookmark before search          |
+| ~g~   | ~gr~    | =mu4e-rerun-search=                   | Rerun the current search             |
+|     |       |                                     |                                      |
+|     |       | *Composing*                           |                                      |
+| ~C~   | ~C~, ~cc~ | =mu4e-compose-new=                    | Compose a new e-mail                 |
+| ~R~   | ~R~, ~cr~ | =mu4e-compose-reply=                  | Compose a reply to selected email    |
+| ~F~   | ~F~, ~cf~ | =mu4e-compose-forward=                | Compose a forward for selected email |
+| ~E~   | ~E~, ~ce~ | =mu4e-compose-edit=                   | Edit selected draft message          |
+|     |       |                                     |                                      |
+|     |       | *Other Actions*                       |                                      |
+| ~q~   | ~q~     | =mu4e~headers-quit-buffer=            | Quit the headers view                |
+
+Controlling the number of messages visible:
+
+- =mu4e-headers-results-limit=: The number of messages to display in mail listings (default 500)
+- =mu4e-headers-full-search=: If =t=, shows all messages, ignoring limit
+
+You can toggle =mu4e-headers-full-search= with =M-x mu4e-headers-toggle-full-search=!
+
+*** View Mode
+
+Many of the same keybindings work!  Marking keys work on the currently viewed message.
+
+| Key | Evil | Command                  | Description                            |
+|-----+------+--------------------------+----------------------------------------|
+|     |      | *Movement*                 |                                        |
+| ~C-n~ | ~j~    | =next-line=                | Moves to the next line in message      |
+| ~C-p~ | ~k~    | =previous-line=            | Moves to the previous line in message  |
+| ~n~   | ~C-j~  | =mu4e-view-headers-next=   | Moves to next email in header list     |
+| ~p~   | ~C-k~  | =mu4e-view-headers-prev=   | Moves to previous email in header list |
+| ~[[~  | ~[[~   | =mu4e-headers-prev-unread= | Moves to previous unread message       |
+| ~]]~  | ~]]~   | =mu4e-headers-next-unread= | Moves to next unread message           |
+
+* Syncing e-mail
+
+Run =M-x mu4e-update-mail-and-index= to sync and index your e-mail at any time (bind it to a key!)
+
+To auto-sync your mail at an interval, add this to =mu4e= config:
+
+#+begin_src emacs-lisp
+
+  ;; Run mu4e in the background to sync mail periodically
+  (mu4e t)
+
+#+end_src
+
+When doing this, it's also good to =:defer= your =mu4e= config so that it doesn't run immediately at startup:
+
+#+begin_src emacs-lisp
+
+  (use-package mu4e
+    :ensure nil
+    :defer 20 ; Wait until 20 seconds after startup
+    :config
+
+    ... the rest ...
+
+#+end_src
+
+* Search queries
+
+- =something= - General text search for "something"
+- =from:stallman= - Emails from a particular sender
+- =date:today..now= - Date range
+- =flag:attach= - Emails with an attachment
+- ="maildir:/Inbox"= - Search in a specific mail directory
+
+You can also use logic statements like =and= , =not=:
+
+  ="maildir:/Inbox" and from:eli and docs=
+
+Documentation: https://www.djcbsoftware.nl/code/mu/mu4e/Queries.html
+
+** Bookmarking queries
+
+You can create your own bookmarked queries!
+
+Run these from anywhere in Emacs with =M-x mu4e-headers-search-bookmark=
+
+In mu4e 1.2.0:
+
+#+begin_src emacs-lisp
+
+      (setq mu4e-bookmarks
+        '(("flag:unread AND NOT flag:trashed" "Unread messages"      ?i)
+          ("date:today..now"                  "Today's messages"     ?t)
+          ("from:stallman"                    "The Boss"             ?s)
+          ("date:7d..now"                     "Last 7 days"          ?w)
+          ("mime:image/*"                     "Messages with images" ?p)))
+
+#+end_src
+
+As of mu4e 1.3.7:
+
+#+begin_src emacs-lisp
+
+      (setq mu4e-bookmarks
+        '((:name "Unread messages" :query "flag:unread AND NOT flag:trashed" :key ?i)
+          (:name "Today's messages" :query "date:today..now" :key ?t)
+          (:name "The Boss" :query "from:stallman" :key ?s)
+          (:name "Last 7 days" :query "date:7d..now" :hide-unread t :key ?w)
+          (:name "Messages with images" :query "mime:image/*" :key ?p)))
+
+#+end_src
+

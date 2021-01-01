@@ -48,6 +48,10 @@ Here is a list of all the episode videos with links to the configuration we buil
 5. [[https://youtu.be/T9kygXveEz0][Give Emacs Psychic Completion Powers with prescient.el]] ([[file:show-notes/Emacs-Tips-Prescient.org][Notes]])
 6. [[https://youtu.be/XZjyJG-sFZI][Teach Emacs to Keep Your Folders Clean]] ([[https://github.com/daviwil/emacs-from-scratch/blob/a57d99ba80276926a2b68521f9a9d23dc173a628/Emacs.org][Code]], [[file:show-notes/Emacs-Tips-Cleaning.org][Notes]])
 
+** [[https://www.youtube.com/watch?v=yZRyEhi4y44&list=PLEoMzSkcN8oM-kA19xOQc8s0gr0PpFGJQ][Emacs Mail]]
+
+1. [[https://youtu.be/yZRyEhi4y44][Streamline Your E-mail Management with mu4e]] ([[file:show-notes/Emacs-Mail-01.org][Notes]])
+
 * Usage Instructions
 
 *IMPORTANT:* Be sure to read the commentary in [[file:Emacs.org][Emacs.org]] in case anything unexpected happens when you load this configuration.  Feel free to [[https://github.com/daviwil/runemacs/issues][file an issue]] to discuss any questions or problems you have so we can discuss it in a future stream!
