@@ -69,7 +69,7 @@ Settings you may need to change:
 - =CertificateFile= - This location can vary based on your Linux distribution!
 - =Patterns= - Defines which folders will be synced\\
   *NOTE*: Non-English users might need to pay extra attention to the =Patterns= line since Gmail /renames/ the IMAP folders based on the selected user interface language one uses in the Gmail web interface. 
-  In Dutch e.g. the /folder/ =[Gmail]/Starred= would need to be changed to =[Gmail]/Met ster=. Changing the =Patterns= line to =*= and running the command =mbsync --list gmail= might give some insight into which /folders/ are available. Unfortunately the mapping does not appear to be one to one, e.g. the /label/ =Sent= is shown as =Verzonden= in Dutch while =mbsync= reports =[Gmail]/Verzonden berichten= as the name of the IMAP folder.
+  In Dutch e.g. the /folder/ =[Gmail]/Starred= would need to be changed to =[Gmail]/Met ster=. Changing the =Patterns= line to =*= and running the command =mbsync --list gmail= might give some insight into which /folders/ are available. Unfortunately the mapping does not appear to be one to one, e.g. the /label/ =Sent= is shown as =Verzonden= in Dutch while =mbsync= reports =[Gmail]/Verzonden berichten= as the name of the IMAP folder. Furthermore similar changes need to be made to the =mu4e= configuration below.
 
 For the security conscious:
 
