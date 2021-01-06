@@ -1,0 +1,361 @@
+#+title: Managing Multiple Email Accounts with mu4e and mbsync
+
+* How mu4e manages e-mail accounts
+
+- =mu4e= is a frontend for me =mu= mail indexer
+- =mu= just scans mail folders and indexes them
+- You tell =mu4e= about your mail folders and what searches you want to use
+- You can also tell =mu4e= how to change its configuration for different "contexts"
+
+* Laying the ground work
+
+Since we will have two accounts under =~/Mail= now, we need to move the existing mail under a subfolder.
+
+But first, we need to stop mu4e from syncing!  Run =M-x mu4e-quit= to stop the background sync timer.
+
+Now we can move the Gmail folders into =~/Mail/Gmail=:
+
+#+begin_src sh
+
+  cd ~
+  mv Mail Gmail
+  mkdir Mail
+  mv Gmail Mail
+
+#+end_src
+
+We also need to update our =.mbsyncrc= to use the new folders:
+
+#+begin_src conf
+
+  Path ~/Mail/Gmail/
+  Inbox ~/Mail/Gmail/Inbox
+
+#+end_src
+
+Test with =mbsync= to make sure everything syncs correctly:
+
+#+begin_src sh
+
+  mbsync -a
+
+#+end_src
+
+Lastly, reindex with =mu=:
+
+#+begin_src sh
+
+  mu index --maildir=~/Mail --my-address=systemcrafters.test@gmail.com
+
+#+end_src
+
+* Setting up our first context
+
+We will update our configuration to configure the Gmail account using =mu4e-contexts:=
+
+#+begin_src emacs-lisp
+
+  (use-package mu4e
+    :ensure nil
+    :config
+
+    ;; This is set to 't' to avoid mail syncing issues when using mbsync
+    (setq mu4e-change-filenames-when-moving t)
+
+    ;; Refresh mail using isync every 10 minutes
+    (setq mu4e-update-interval (* 10 60))
+    (setq mu4e-get-mail-command "mbsync -a")
+    (setq mu4e-maildir "~/Mail")
+
+    (setq mu4e-contexts
+          (list
+           ;; Work account
+           (make-mu4e-context
+            :name "Work"
+            :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "systemcrafters.test@gmail.com")
+                    (user-full-name    . "System Crafters Gmail")
+                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")))))
+
+    (setq mu4e-maildir-shortcuts
+          '(("/Gmail/Inbox"             . ?i)
+            ("/Gmail/[Gmail]/Sent Mail" . ?s)
+            ("/Gmail/[Gmail]/Trash"     . ?t)
+            ("/Gmail/[Gmail]/Drafts"    . ?d)
+            ("/Gmail/[Gmail]/All Mail"  . ?a))))
+
+#+end_src
+
+Docs: https://www.djcbsoftware.nl/code/mu/mu4e/Contexts.html
+Example: https://www.djcbsoftware.nl/code/mu/mu4e/Contexts-example.html
+
+Try out the new context by evaluating the new configuration and run =M-x mu4e=.
+
+You can change how the default context is picked by setting =mu4e-context-policy= to one of the following values:
+
+- =ask-if-none= - Ask the first time you enter the view (default)
+- =pick-first= - Pick the first context in the =mu4e-contexts= list
+- =always-ask= - Always ask when entering the main view
+
+* Syncing the second account
+
+We'll be using a Fastmail account (https://ref.fm/u7703101) for this example.  It requires an App Password to connect to the IMAP endpoint:
+
+https://www.fastmail.com/settings/security/devicekeys/new
+
+Now we can add the IMAP configuration for the Fastmail account to our =.mbsyncrc= file:
+
+#+begin_src conf
+
+  ... Gmail configuration from previous video ...
+
+  IMAPAccount fastmail
+  Host imap.fastmail.com
+  Port 993
+  User systemcrafterstest@gmail.com
+  PassCmd "cat ~/.oh-no-another-insecure-password"
+  SSLType IMAPS
+  SSLVersions TLSv1.2
+  CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+  IMAPStore fastmail-remote
+  Account fastmail
+
+  MaildirStore fastmail-local
+  Path ~/Mail/Fastmail/
+  Inbox ~/Mail/Fastmail/INBOX/
+  Trash ~/Mail/Fastmail/Trash/
+  SubFolders Verbatim
+
+  Channel fastmail
+  Master :fastmail-remote:
+  Slave :fastmail-local:
+  Patterns *
+  Expunge None
+  CopyArrivalDate yes
+  Sync All
+  Create Both
+  SyncState *
+
+#+end_src
+
+Now you can sync the new account:
+
+#+begin_src sh
+
+  mkdir ~/Mail/Fastmail
+  mbsync -a
+
+#+end_src
+
+You'll also need to reindex with =mu= to add the new address:
+
+#+begin_src sh
+
+  mu index --maildir=~/Mail \
+      --my-address=systemcrafters.test@gmail.com \
+      --my-address=systemcrafterstest@fastmail.com
+
+#+end_src
+
+*NOTE:* It's possible you will see an error like this -
+
+#+begin_src sh
+
+  mu: mu_store_new_writable: xapian error 'Unable to get write lock on /home/daviwil/.mu/xapian: already locked' (11)
+
+#+end_src
+
+Just kill the running =mu= process and run =mu index= again:
+
+#+begin_src sh
+
+  pkill mu
+  # run mu index again
+
+#+end_src
+
+* Adding the second account to mu4e
+
+Now we can add a new context for the account to =mu4e-contexts:=
+
+#+begin_src emacs-lisp
+
+  (setq mu4e-contexts
+        (list
+         ;; Work account
+         (make-mu4e-context
+          :name "Work"
+          :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "systemcrafters.test@gmail.com")
+                  (user-full-name    . "System Crafters Gmail")
+                  (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                  (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                  (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                  (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")))
+
+         ;; Personal account
+         (make-mu4e-context
+          :name "Personal"
+          :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Fastmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "systemcrafterstest@fastmail.com")
+                  (user-full-name    . "System Crafters Fastmail")
+                  (mu4e-drafts-folder  . "/Fastmail/Drafts")
+                  (mu4e-sent-folder  . "/Fastmail/Sent")
+                  (mu4e-refile-folder  . "/Fastmail/Archive")
+                  (mu4e-trash-folder  . "/Fastmail/Trash")))))
+#+end_src
+
+After evaluating this configuration, we can launch =mu4e= again and switch contexts using the ~;~ (semicolon) character.
+
+* How to use contexts
+
+Examples:
+
+- Compose new mail in a context
+- Archive a message in a context (show which folder it goes to)
+- Reply to a message in a merged search
+
+You can create bookmarks to show merged views of folders across accounts:
+
+#+begin_src emacs-lisp
+
+  (add-to-list 'mu4e-bookmarks '("m:/Fastmail/INBOX or m:/Gmail/Inbox" "All Inboxes" ?i))
+
+#+end_src
+
+This is your e-mail client to build!
+
+* What's next?
+
+- Composing e-mails
+- Displaying unread mail count and notifications
+- Even more uses for contexts and search queries
+- Org Mode integration
+
+* Complete Configuration
+
+Here's the complete configuration for this episode:
+
+*Emacs.org*
+
+#+begin_src emacs-lisp
+
+  (use-package mu4e
+    :ensure nil
+    :config
+
+    ;; This is set to 't' to avoid mail syncing issues when using mbsync
+    (setq mu4e-change-filenames-when-moving t)
+
+    ;; Refresh mail using isync every 10 minutes
+    (setq mu4e-update-interval (* 10 60))
+    (setq mu4e-get-mail-command "mbsync -a")
+    (setq mu4e-maildir "~/Mail")
+
+    (setq mu4e-contexts
+          (list
+           ;; Work account
+           (make-mu4e-context
+            :name "Work"
+            :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "systemcrafters.test@gmail.com")
+                    (user-full-name    . "System Crafters Gmail")
+                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")))
+
+           ;; Personal account
+           (make-mu4e-context
+            :name "Personal"
+            :match-func
+              (lambda (msg)
+                (when msg
+                  (string-prefix-p "/Fastmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "systemcrafterstest@fastmail.com")
+                    (user-full-name    . "System Crafters Fastmail")
+                    (mu4e-drafts-folder  . "/Fastmail/Drafts")
+                    (mu4e-sent-folder  . "/Fastmail/Sent")
+                    (mu4e-refile-folder  . "/Fastmail/Archive")
+                    (mu4e-trash-folder  . "/Fastmail/Trash")))))
+
+    (setq mu4e-maildir-shortcuts
+        '(("/Inbox"             . ?i)
+          ("/Gmail/[Gmail]/Sent Mail" . ?s)
+          ("/Gmail/[Gmail]/Trash"     . ?t)
+          ("/Gmail/[Gmail]/Drafts"    . ?d)
+          ("/Gmail/[Gmail]/All Mail"  . ?a))))
+
+#+end_src
+
+*~/.mbsyncrc*
+
+#+begin_src conf
+
+  IMAPAccount gmail
+  Host imap.gmail.com
+  User systemcrafters.test@gmail.com
+  PassCmd "cat ~/.oh-no-insecure-password"
+  SSLType IMAPS
+  CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+  IMAPStore gmail-remote
+  Account gmail
+
+  MaildirStore gmail-local
+  Subfolders Verbatim
+  Path ~/Mail/Gmail/
+  Inbox ~/Mail/Gmail/Inbox
+
+  Channel gmail
+  Master :gmail-remote:
+  Slave :gmail-local:
+  Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
+  Create Both
+  SyncState *
+
+  IMAPAccount fastmail
+  Host imap.fastmail.com
+  Port 993
+  User systemcrafterstest@fastmail.com
+  PassCmd "cat ~/.oh-no-another-insecure-password"
+  SSLType IMAPS
+  SSLVersions TLSv1.2
+  CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+  IMAPStore fastmail-remote
+  Account fastmail
+
+  MaildirStore fastmail-local
+  Path ~/Mail/Fastmail/
+  Inbox ~/Mail/Fastmail/INBOX/
+  Trash ~/Mail/Fastmail/Trash/
+  SubFolders Verbatim
+
+  Channel fastmail
+  Master :fastmail-remote:
+  Slave :fastmail-local:
+  Patterns *
+  Expunge None
+  CopyArrivalDate yes
+  Sync All
+  Create Both
+  SyncState *
+
+#+end_src
