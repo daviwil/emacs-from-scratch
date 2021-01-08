@@ -25,6 +25,10 @@ Here is a list of all the episode videos with links to the configuration we buil
 9. [[https://youtu.be/wa_wZIuT9Vw][Learn to Love the Terminal Modes]] ([[https://github.com/daviwil/emacs-from-scratch/tree/bbfbc77b3afab0c14149e07d0ab08d275d4ba575][Code]])
 10. [[https://youtu.be/PMWwM8QJAtU][Effortless File Management with Dired]] ([[https://github.com/daviwil/emacs-from-scratch/blob/8c302a79bf5700f6ef0279a3daeeb4123ae8bd59/Emacs.org#dired][Code]])
 
+** [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]
+
+1. [[https://youtu.be/RQK_DaaX34Q][Introduction to Emacs Lisp]] (Notes)
+
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
 
 1. [[https://www.youtube.com/watch?v=f7xB2fFk1tQ][Getting Started with EXWM]] ([[https://github.com/daviwil/emacs-from-scratch/blob/219c060e1bd695948c7691955a12a5dcaf3a9530/Emacs.org#window-management][Code]], [[file:show-notes/Emacs-Desktop-01.org][Notes]])
