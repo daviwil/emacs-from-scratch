@@ -1,0 +1,229 @@
+#+title: Using Encrypted Passwords in Emacs
+
+* The Auth Source Library
+
+The =auth-source= library provides Emacs with a way to look up passwords when connecting to other machines.
+
+Use cases:
+
+- Sending SMTP mail
+- Connecting to IRC servers
+- Connecting to SSH servers with TRAMP
+- Connecting to the GitHub API with Forge
+
+Any package can use this by calling the =auth-source-search= function!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/auth/index.html#Top][Emacs Manual: Auth Source]]
+
+* Authentication Sources
+
+The =auth-source= library looks for passwords in a set of sources configured by the variable =auth-sources.=
+
+By default it looks at:
+
+- =~/.authinfo.gpg=
+- =~/.authinfo=
+- =~/.netrc=
+
+You can add additional auth sources to this list if you store your passwords another way.  For example:
+
+- macOS keychain ("internet" or "generic")
+- Linux Secret Service
+- GNOME Keyring
+- KWallet
+
+You should try the =customize= UI for configuring the possible options!
+
+* The .authinfo file
+
+Directly inspired by [[https://ec.haxx.se/usingcurl/usingcurl-netrc][.netrc]] files which have existed in UNIX for a long time.
+
+Passwords stored in a file named =~/.authinfo= in this format, one per line:
+
+#+begin_src conf
+
+  machine facebook.com login zuck password w0rldd0m1n4ti0n
+
+#+end_src
+
+You can also store passwords for the same host with different ports, usernames, etc:
+
+#+begin_src conf
+
+  machine mailprovider.com login mailuser password b4dp4ssw0rd port 433
+  machine mailprovider.com login mailuser password worsepassword
+
+#+end_src
+
+The =auth-source-search= function can read this file and search for entries based on any of the details they contain:
+
+#+begin_src emacs-lisp
+
+  (auth-source-search :host "facebook.com")
+  (auth-source-search :host "mailprovider.com" :user "mailuser")
+  (auth-source-search :host "mailprovider.com" :user "mailuser" :port 433)
+
+#+end_src
+
+The benefit of using =.authinfo= is that it's a file you have control over and can sync between systems (once encrypted!)  More easily portable than using one of the desktop environment keyrings.
+
+* Encrypting .authinfo
+
+However, this file is plaintext by default, which is unsafe from a security standpoint!
+
+Emacs uses GnuPG via the =epa= library to automatically encrypt and decrypt any files that end with =.gpg=, so we can create a file named =.authinfo.gpg= with the same contents to have them be encrypted on save.
+
+[[https://www.gnu.org/software/emacs/manual/html_mono/epa.html][Emacs Manual: Easy PGP Assistant]] (=epa=)
+
+** Creating an encryption key
+
+But first, we need to generate an encryption key!  The following command (in GPG 2.2 and above) will walk you through the process of creating a new key:
+
+#+begin_src emacs-lisp
+
+  gpg --full-generate-key
+
+#+end_src
+
+We need to answer some questions it asks us:
+
+1. What kind of key do you want?  *(1) RSA and RSA (default)*
+2. What keysize do you want? *4096*
+3. How long should the key be valid? *0* (Key does not expire)
+4. Enter your name
+5. Enter your e-mail address
+6. Enter a comment for the key (not necessary, but can be used to identify it)
+7. If everything looks good, press *O* for "Okay"
+8. You will now be prompted for a passphrase.  This is like a password for your encryption key, it should be secure and memorable!
+9. After entering the password, it will generate the new key.  Move the mouse around or press keyboard keys to help generate entropy.
+
+You should now have a new key that will show up when you run the following command:
+
+#+begin_src sh
+
+  gpg --list-keys
+
+#+end_src
+
+We can test this out by editing the new =~/.authinfo.gpg= file and then paste the contents from the original =~/.authinfo= file we created.
+
+Once you save the =~/.authinfo.gpg= file, a new Emacs window will appear and you will be prompted for which key to use to encrypt the file:
+
+#+begin_src sh
+
+  Select recipients for encryption.
+  If no one is selected, symmetric encryption will be performed.
+  - ‘m’ to mark a key on the line
+  - ‘u’ to unmark a key on the line
+  [Cancel][OK]
+
+#+end_src
+
+If you only have one encryption key, this is all that will appear.  You merely need to move your keyboard cursor on top of the string =[OK]= and press enter.  You will be prompted for your passphrase to unlock the key and the file will be encrypted once you save it successfully.
+
+ If you have more than one encryption key, they will be listed below the prompt:
+
+#+begin_src sh
+
+  Select recipients for encryption.
+  If no one is selected, symmetric encryption will be performed.
+  - ‘m’ to mark a key on the line
+  - ‘u’ to unmark a key on the line
+  [Cancel][OK]
+
+    u FF0E73B64BBEB63F System Crafters (Password Encryption Key) <systemcrafterstest@gmail.com>
+    u C0495F71F74DC5E9 David Wilson <david@systemcrafters.cc>
+
+#+end_src
+
+You will need to move your keyboard cursor to the line with the key you would like to use and press the letter =m= to mark the key, then move the cursor to =[OK]= and press Enter.  You will be prompted for your passphrase to unlock the key and the file will be encrypted once you save it successfully.
+
+** Verifying that it works
+
+You can verify that the file is encrypted by trying to read it at the shell:
+
+#+begin_src sh
+
+  cat ~/.authinfo.gpg
+
+#+end_src
+
+You can also double-check that the passwords are accessible to =auth-source-search=:
+
+#+begin_src emacs-lisp
+
+  (auth-source-search :host "facebook.com")
+  (auth-source-search :host "mailprovider.com" :user "mailuser")
+  (auth-source-search :host "mailprovider.com" :user "mailuser" :port 433)
+
+#+end_src
+
+** Starting gpg-agent
+
+The =gpg-agent= manages access to your PGP keys and assists with encryption and decryption of files.  It can also cache your passphrase so that you don't get prompted for it every time you try to encrypt or decrypt a file.
+
+Emacs' =epa= library may be able to automatically start it for you when you try to encrypt or decrypt a file.  If it doesn't, you may need to start it yourself!
+
+We need to make sure the =gpg-agent= is running:
+
+#+begin_src sh
+
+  # Check if gpg-agent is already running
+  pgrep gpg-agent
+
+  # If it's not running, you can start it up with this command:
+  gpg-connect-agent /bye
+
+#+end_src
+
+In Ubuntu 20.04, it seems to be started as a user service.  If it isn't running by default in your system, you may need to add =gpg-connect-agent /bye= as a startup command in your desktop environment or however you start Xorg sessions.
+
+* Accessing passwords outside of Emacs
+
+If you have Emacs running as a daemon or in server mode (see [[https://youtu.be/ZjCRxAMPdNc][my video]] on that) you can use =emacsclient= to access your passwords from other programs (like =mbsync=, etc).
+
+First we'll create a helper function to add to our configuration to make this a little easier to call:
+
+#+begin_src emacs-lisp
+
+  (defun efs/lookup-password (&rest keys)
+    (let ((result (apply #'auth-source-search keys)))
+      (if result
+          (funcall (plist-get (car result) :secret))
+          nil)))
+
+#+end_src
+
+*NOTE*: We have to check if
+
+Make sure Emacs is running as a server: =M-x server-start=
+
+Now you can invoke =emacsclient= in the shell to run this function and process the result:
+
+#+begin_src sh
+
+  emacsclient -e "(efs/lookup-password :host \"facebook.com\" :user \"zuck\")" | cut -d '"' -f2
+
+#+end_src
+
+Any program that can call an external shell application can now use this line to request the unencrypted password!  When the password is requested, you will be prompted for your passphrase if it has been a while since the last time you were asked.
+
+For example, in the =mbsync= config from the Emacs Mail series:
+
+#+begin_src conf
+
+  IMAPAccount gmail
+  Host imap.gmail.com
+  User systemcrafters.test@gmail.com
+  PassCmd "emacsclient -e \"(efs/lookup-password :host \\\"gmail.com\\\" :user \\\"systemcrafters.test\\\")\" | cut -d '\"' -f2"
+
+  SSLType IMAPS
+  CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+#+end_src
+
+The command looks a little weird because of all the escaping, but it works!
+
+* What's next?
+
+In a future video, we'll cover a program called [[https://passwordstore.org][pass]] that simplifies the management of passwords for multiple accounts and makes it possible for us to sync them between multiple computers using a Git repository!
