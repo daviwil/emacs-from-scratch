@@ -238,8 +238,8 @@ Here are some you can try:
   ;; Another way to create a list
   (list 1 2 3)
 
-  ;; Get the second
-  (car (car '(1 2 3)))
+  ;; Get the second list item
+  (car (cdr '(1 2 3)))
 
   ;; A vector
   [1 2 3]
