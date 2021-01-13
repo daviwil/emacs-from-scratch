@@ -1,0 +1,71 @@
+#+title: What is "System Crafting?"
+
+* What's in a name?
+
+- A name to describe computer configuration enthusiasts
+- The act, or craft, of creating and refining your computing environment
+- You're probably here because you are inclined toward this (Emacs)
+
+Let's go into more detail about what it means!
+
+* Why do it?
+
+- Satisfaction of learning something new, being creative
+- Building an environment tailored to the way you think and work
+- Express your aesthetics (minimalism, colors, typography)
+- Ensuring your freedom and privacy
+
+* All roads lead to GNU/Linux
+
+- Most of us start with mainstream operating systems
+- The freedom of the GNU/Linux combo is unmatched
+- It gives you a platform for building your ideal environment
+- An endless array of programs and tools you can use
+
+* Foundational components
+
+** Linux distribution
+
+- Mainstream, easy to use: Ubuntu, Debian, Fedora, etc
+- More technical: Arch (and derivatives), Gentoo
+- Functional: NixOS, GNU Guix
+
+** Desktop environment / window manager
+
+- Full environments: GNOME, KDE, XFCE, MATE, LXDE/LXQt, etc
+- Window managers: EXWM, i3, Awesome, dwm, bspwm, StumpWM, Openbox, etc
+
+** Editor
+
+- Emacs
+- Vim (or derivatives)
+
+Each of these has its own implications on how you might craft your system!
+
+** Miscellaneous
+
+- Mail
+- Chat
+- Music
+- File syncing
+- Login managers
+- Session managers
+
+* Cultivating and sharing your configuration
+
+- Check in your configuration to source control
+- Sharing your configuration with others
+- Improving the organization and presentation
+
+* What's the ideal strategy?
+
+- Start wherever you are most comfortable
+- Use your tools for a while (at least a month) before trying something else
+- Follow good content sources (Twitter, Reddit, Blogs, Videos) for new ideas
+- Join communities where people trade ideas
+
+* Are you interested?
+
+Want to hear more thoughts on this?  Let me know in the comments, and share your own ideas so that we can discuss them!
+
+In the future I'll branch out to talk more about alternative system configs and tools so that you have more options to choose from.
