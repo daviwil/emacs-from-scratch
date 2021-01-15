@@ -27,7 +27,8 @@ Here is a list of all the episode videos with links to the configuration we buil
 
 ** [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]
 
-1. [[https://youtu.be/RQK_DaaX34Q][Introduction to Emacs Lisp]] (Notes)
+1. [[https://youtu.be/RQK_DaaX34Q][Introduction to Emacs Lisp]] ([[file:show-notes/Emacs-Lisp-01.org][Notes]])
+2. [[https://youtu.be/XXpgzyeYh_4][Types, Conditionals, and Loops]] ([[file:show-notes/Emacs-Lisp-02.org][Notes]])
 
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
 
