@@ -153,6 +153,8 @@ By default all e-mails are sent as plain text.  This can lead to strange wrappin
 
 #+end_src
 
+*NOTE:* I made a mistake in mentioning that Gmail and other modern mail clients support =format=flowed=!  Check out [[https://useplaintext.email/#other-clients][this website]] to see a list of clients that support it.  Thanks to *boticelli* in the System Crafters Discord for pointing it out!
+
 We will discuss how to send formatted e-mails using Org Mode in a future episode!
 
 * Adding a signature to your emails
