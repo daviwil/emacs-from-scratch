@@ -1,0 +1,309 @@
+#+title: Compose and Send Email with Emacs
+
+* What will we cover?
+
+- Configuring Emacs to send email
+- Composing email
+- Attaching files and images to emails
+- Signing emails with GPG
+
+* Configuring SMTP
+
+SMTP is [[https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol][Simple Mail Transfer Protocol]], an old standard for connecting to a server to send email.
+
+Traditionally, SMTP servers run on port 25 without any kind of encryption.  These days, most will either use SSL or TLS, either of which may use different ports.
+
+- =smtpmail-smtp-server= - The host where we connect to send mail
+- =smtpmail-smtp-service= - The port number of the SMTP service (defaults to 25)
+- =smtpmail-stream-type= - Determines whether SSL or TLS should be used when connecting
+
+If you only send mail from one account, set the variables the way you would normally do:
+
+#+begin_src emacs-lisp
+
+  (setq smtpmail-smtp-server "smtp.fastmail.com"
+        smtpmail-smtp-service 465
+        smtpmail-stream-type  'ssl)
+
+#+end_src
+
+When using multiple accounts (contexts), you can set the SMTP variables for each context:
+
+#+begin_src emacs-lisp
+
+  (setq mu4e-contexts
+        (list
+         ;; Work account
+         (make-mu4e-context
+          :name "Work"
+          :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "systemcrafters.test@gmail.com")
+                  (user-full-name    . "System Crafters Gmail")
+                  (smtpmail-smtp-server  . "smtp.gmail.com")
+                  (smtpmail-smtp-service . 465)
+                  (smtpmail-stream-type  . 'ssl)
+                  (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                  (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                  (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                  (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")))
+
+         ;; Personal account
+         (make-mu4e-context
+          :name "Personal"
+          :match-func
+            (lambda (msg)
+              (when msg
+                (string-prefix-p "/Fastmail" (mu4e-message-field msg :maildir))))
+          :vars '((user-mail-address . "systemcrafterstest@fastmail.com")
+                  (user-full-name    . "System Crafters Fastmail")
+                  (smtpmail-smtp-server  . "smtp.fastmail.com")
+                  (smtpmail-smtp-service . 465)
+                  (smtpmail-stream-type  . 'ssl)
+                  (mu4e-drafts-folder  . "/Fastmail/Drafts")
+                  (mu4e-sent-folder  . "/Fastmail/Sent")
+                  (mu4e-refile-folder  . "/Fastmail/Archive")
+                  (mu4e-trash-folder  . "/Fastmail/Trash")))))
+
+#+end_src
+
+* Configure the mail-sending function
+
+So that we don't get prompted about how mail should be sent, we will configure the =message-send-mail-function= variable to automatically call =smtpmail-send-it=:
+
+#+begin_src emacs-lisp
+
+    ;; Configure the function to use for sending mail
+    (setq message-send-mail-function 'smtpmail-send-it)
+
+#+end_src
+
+* Composing Email
+
+Let's try to compose an e-mail!
+
+Run =M-x mu4e= to get to the mail dashboard and then press =C= (capital C)
+
+If you have configured multiple contexts (which we have), it will ask you which context to use.
+
+Now we have some fields to fill in:
+
+- =From= - This should be automatically populated from your =user-full-name= and =user-full-address=
+- =To= - Enter recipients separated by comma or semicolon.  You can press ~TAB~ to complete recipient names!
+- =Subject= - The subject of the message (may be pre-populated in replies or forwards)
+
+Now we can move our cursor below the line "text follows this line" to write the message!
+
+There are three things you can do from here:
+
+- ~C-c C-c~ - Send the message
+- ~C-c C-k~ - Discard the message
+- ~C-c C-d~ - Save the message in your Drafts folder
+
+Since we want to send this e-mail, let's press ~C-c C-c~!
+
+We can check our Sent Mail folder to verify that the mail was placed there.
+
+https://www.djcbsoftware.nl/code/mu/mu4e/Writing-messages.html
+
+** Handling passwords for sending mail
+
+When you attempt to send an e-mail, Emacs will ask you for the password.  Once you enter it, it will ask you if you'd like to save it in your =~/.authinfo= file.  I do not recommend doing this because this file is not encrypted!
+
+Check out my video [[https://youtu.be/nZ_T7Q49B8Y][Encrypt Your Passwords with Emacs]] to learn more about the =auth-source= library and how you can use it to store your passwords in an encrypted file so that you don't have to enter them every time you send e-mail!
+
+You will need to add an entry to your =~/.authinfo.gpg= file for your SMTP server:
+
+#+begin_src sh
+
+  machine smtp.fastmail.com login systemcrafterstest@fastmail.com password b4dp4ssw0rd port 465
+
+#+end_src
+
+** Other ways to get to the compose screen
+
+You can follow a few other paths to compose e-mail:
+
+- Press =C= while in the mail list
+- Press =R= while selecting a mail in the mail list or while viewing an e-mail to compose a reply
+- Press =F= while selecting a mail in the mail list or while viewing an e-mail to compose a forwarded mail
+- Run =M-x mu4e-compose-new= or bind that command to a key!
+
+** Picking a context for sending mail
+
+When using multiple contexts, you might want to define which context gets picked automatically for sending email (similar to =mu4e-context-policy=):
+
+#+begin_src emacs-lisp
+
+    ;; Only ask if a context hasn't been previously picked
+    (setq mu4e-compose-context-policy 'ask-if-none)
+
+#+end_src
+
+* Improving the look of plain text emails
+
+By default all e-mails are sent as plain text.  This can lead to strange wrapping in other email clients when reading your messages.  You can improve this by setting the following variable:
+
+#+begin_src emacs-lisp
+
+  ;; Make sure plain text mails flow correctly for recipients
+  (setq mu4e-compose-format-flowed t)
+
+#+end_src
+
+We will discuss how to send formatted e-mails using Org Mode in a future episode!
+
+* Adding a signature to your emails
+
+You can set the =mu4e-compose-signature= variable to a string for the signature to include in your e-mails!
+
+#+begin_src emacs-lisp
+
+  (setq mu4e-compose-signature "David")
+
+#+end_src
+
+This can also be set per-context.
+
+#+begin_src emacs-lisp
+
+ ;; ... clipped from full context config ...
+
+  :vars '((user-mail-address . "systemcrafterstest@fastmail.com")
+          (user-full-name    . "System Crafters Fastmail")
+          (mu4e-compose-signature . "- David")
+          (smtpmail-smtp-server  . "smtp.fastmail.com"))
+
+#+end_src
+
+If you want the signature to be multi-line, use the =\n= character to denote the line breaks:
+
+#+begin_src emacs-lisp
+
+  "David Wilson\nSystem Crafters on YouTube"
+
+  ;; or if you want it to be more readable in your config:
+
+  (concat
+    "David Wilson\n"
+    "System Crafters on YouTube")
+
+#+end_src
+
+* File Attachments
+
+To add an attachment to your e-mail, press ~C-c C-a~ in the message buffer and then select the file to be attached.
+
+It will ask you a few things about the file you're attaching, most importantly the type of the attachment.  It will usually pick the right one for you based on the file extension!
+
+Drag and drop also works!
+
+* Message Drafts
+
+If you save a message as a draft while editing it (~C-c C-d~), you can find it in the Drafts folder you configured for that context.
+
+Select the message in the headers list or open the email and press ~E~ (or ~c e~ with evil-mode bindings).  You will now be placed back into the message editor!
+
+* Signing Emails
+
+If you followed my video [[https://youtu.be/nZ_T7Q49B8Y][Encrypt Your Passwords with Emacs]] then you've already set up a GPG key for signing emails.
+
+You can use the =mml-secure-message-sign-pgpmime= function while composing a mail to mark it to be signed once you send it.  When you press ~C-c C-c~ to send the mail, you will be prompted for your passphrase and then the mail will be signed!
+
+#+begin_src emacs-lisp
+
+  ;; Use a specific key for signing by referencing its thumbprint
+  (setq mml-secure-openpgp-signers '("53C41E6E41AAFE55335ACA5E446A2ED4D940BF14"))
+
+#+end_src
+
+** Automatically Sign Every Email
+
+You can automatically sign every e-mail using the =message-send-hook=:
+
+#+begin_src emacs-lisp
+
+  (add-hook 'message-send-hook 'mml-secure-message-sign-pgpmime)
+
+#+end_src
+
+* Encrypting Emails
+
+Similarly to signing emails, you can also encrypt them with =mml-secure-message-encrypt-pgpmine=!  Anyone with your public key will be able to decrypt the message.
+
+* Complete configuration
+
+Here's the complete configuration we made for this episode:
+
+#+begin_src emacs-lisp
+
+  (use-package mu4e
+    :ensure nil
+    :config
+
+    ;; This is set to 't' to avoid mail syncing issues when using mbsync
+    (setq mu4e-change-filenames-when-moving t)
+
+    ;; Refresh mail using isync every 10 minutes
+    (setq mu4e-update-interval (* 10 60))
+    (setq mu4e-get-mail-command "mbsync -a")
+    (setq mu4e-maildir "~/Mail")
+
+    ;; Make sure plain text mails flow correctly for recipients
+    (setq mu4e-compose-format-flowed t)
+
+    ;; Configure the function to use for sending mail
+    (setq message-send-mail-function 'smtpmail-send-it)
+
+    ;; NOTE: Only use this if you have set up a GPG key!
+    ;; Automatically sign all outgoing mails
+    ;; (add-hook 'message-send-hook 'mml-secure-message-sign-pgpmime)
+
+    (setq mu4e-contexts
+            (list
+            ;; Work account
+            (make-mu4e-context
+            :name "Work"
+            :match-func
+                (lambda (msg)
+                (when msg
+                    (string-prefix-p "/Gmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "systemcrafters.test@gmail.com")
+                    (user-full-name    . "System Crafters Gmail")
+                    (smtpmail-smtp-server  . "smtp.gmail.com")
+                    (smtpmail-smtp-service . 465)
+                    (smtpmail-stream-type  . ssl)
+                    (mu4e-compose-signature . "David via Gmail")
+                    (mu4e-drafts-folder  . "/Gmail/[Gmail]/Drafts")
+                    (mu4e-sent-folder  . "/Gmail/[Gmail]/Sent Mail")
+                    (mu4e-refile-folder  . "/Gmail/[Gmail]/All Mail")
+                    (mu4e-trash-folder  . "/Gmail/[Gmail]/Trash")))
+
+            ;; Personal account
+            (make-mu4e-context
+            :name "Personal"
+            :match-func
+                (lambda (msg)
+                (when msg
+                    (string-prefix-p "/Fastmail" (mu4e-message-field msg :maildir))))
+            :vars '((user-mail-address . "systemcrafterstest@fastmail.com")
+                    (user-full-name    . "System Crafters Fastmail")
+                    (smtpmail-smtp-server  . "smtp.fastmail.com")
+                    (smtpmail-smtp-service . 465)
+                    (smtpmail-stream-type  . ssl)
+                    (mu4e-compose-signature . "David via Fastmail")
+                    (mu4e-drafts-folder  . "/Fastmail/Drafts")
+                    (mu4e-sent-folder  . "/Fastmail/Sent")
+                    (mu4e-refile-folder  . "/Fastmail/Archive")
+                    (mu4e-trash-folder  . "/Fastmail/Trash")))))
+
+    (setq mu4e-maildir-shortcuts
+        '(("/Inbox"             . ?i)
+          ("/[Gmail]/Sent Mail" . ?s)
+          ("/[Gmail]/Trash"     . ?t)
+          ("/[Gmail]/Drafts"    . ?d)
+          ("/[Gmail]/All Mail"  . ?a))))
+
+#+end_src
