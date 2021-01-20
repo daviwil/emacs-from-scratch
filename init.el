@@ -118,7 +118,8 @@
 
 (use-package all-the-icons
   :init
-  (unless (member "all-the-icons" (font-family-list))
+  (when (and (not (member "all-the-icons" (font-family-list)))
+             (window-system))
     (all-the-icons-install-fonts t)))
 
 (use-package doom-modeline
