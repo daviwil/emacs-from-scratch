@@ -29,6 +29,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 
 1. [[https://youtu.be/RQK_DaaX34Q][Introduction to Emacs Lisp]] ([[file:show-notes/Emacs-Lisp-01.org][Notes]])
 2. [[https://youtu.be/XXpgzyeYh_4][Types, Conditionals, and Loops]] ([[file:show-notes/Emacs-Lisp-02.org][Notes]])
+3. [[https://youtu.be/EqgkAUHw0Yc][Defining Functions and Commands]] ([[file:show-notes/Emacs-Lisp-03.org][Notes]])
 
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
 
