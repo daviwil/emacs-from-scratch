@@ -1,0 +1,141 @@
+#+title: Enhance Your Emails with Org Mode
+
+* Org Mode is great for email too!
+
+- Composing HTML-formatted email messages
+- Attaching images inline
+- Sending the contents of your existing Org files
+- Writing e-mails in Org files to send later
+
+* Sending HTML mail
+
+We can use the [[https://github.com/org-mime/org-mime][org-mime]] package for this purpose:
+
+#+begin_src emacs-lisp
+
+  (use-package org-mime
+    :ensure t)
+
+#+end_src
+
+Now you can use =M-x org-mime-htmlize= inside of a mail composition buffer to convert it to HTML!
+
+You can include:
+
+- Formatted text (bold, italic, etc)
+- Headings and subheadings
+- Links
+- Code blocks
+- Images (that get attached correctly)
+- ... anything that org-mode can convert to HTML
+
+#+begin_src
+
+  * First heading!
+
+  Check out [[https://github.com/org-mime/org-mime][org-mime]]
+
+  ** Here's some Emacs Lisp
+
+  #+begin_src emacs-lisp
+
+    (setq it-works t)
+
+    (defun does-it-work ()
+      (when it-works
+        (message "It works!")))
+
+  +end_src
+
+  Enjoy this huge Emacs logo:
+
+  [[~/Downloads/1024px-EmacsIcon.svg.png]]
+
+  *Very cool!*
+
+#+end_src
+
+*NOTE:* Don't forget to add the =#= before the =+end_src= if you copy/paste this block!
+
+* Composing Org mail comfortably
+
+This required us to type out raw Org into the composition buffer.  What if we want to write in Org Mode?
+
+Run =M-x org-mime-edit-mail-in-org-mode=
+
+This didn't automatically convert our mail body to HTML though!  Still need to run =M-x org-mime-htmlize= before sending.
+
+* Sending an existing Org buffer or subtree as e-mail
+
+You can use the following functions to send an existing org-mode document as an e-mail message:
+
+- =org-mime-org-buffer-htmlize= - Send an entire org-mode buffer as an e-mail message
+- =org-mime-org-subtree-htmlize= - Send a subtree of the current org-mode buffer as an e-mail message
+
+This will open up a new mail composition view, but it seems to use the default compose function instead of mu4e!  You may need to run =M-x mu4e-compose-mode= to set the buffer to use mu4e's behavior.
+
+One interesting aspect of the subtree function is that you can configure the e-mail using Org properties:
+
+#+begin_src
+
+  * Mail message
+  :PROPERTIES:
+  :MAIL_SUBJECT: I wrote this in Org Mode!
+  :MAIL_TO: systemcrafters.test@gmail.com
+  :MAIL_CC: person2@gmail.com
+  :MAIL_BCC: person3@gmail.com
+  :END:
+
+  Here is the body of the message!
+
+#+end_src
+
+This would allow you to compose Org-formatted e-mails in advance and then send them when you are ready.
+
+* Customizing the HTML export style
+
+As you might have noticed, the exported e-mail has section numbers for headings.  We can turn that off!
+
+#+begin_src emacs-lisp
+
+  (setq org-mime-export-options '(:section-numbers nil
+                                  :with-author nil
+                                  :with-toc nil))
+
+#+end_src
+
+=org-mime= starts with Org's configured export options for HTML so your defaults may be different.
+
+We can also customize the styling of individual HTML elements inside of the message using =org-mime-html-hook=.  Here's an example of making all code blocks have a dark background and light text:
+
+#+begin_src emacs-lisp
+
+  (add-hook 'org-mime-html-hook
+            (lambda ()
+              (org-mime-change-element-style
+              "pre" (format "color: %s; background-color: %s; padding: 0.5em;"
+                            "#E6E1DC" "#232323"))))
+
+#+end_src
+
+* Automatically converting mail to HTML
+
+You can easily add a hook to do this conversion for you automatically:
+
+#+begin_src emacs-lisp
+
+  (add-hook 'message-send-hook 'org-mime-htmlize)
+
+#+end_src
+
+Alternatively if you just want be reminded when you didn't use HTML, use =org-mime-confirm-when-no-mulitpart=:
+
+#+begin_src emacs-lisp
+
+  (add-hook 'message-send-hook 'org-mime-confirm-when-no-multipart)
+
+#+end_src
+
+* What's next?
+
+Next time we'll talk about how you can use Org Mode to manage your email processing workflow using capture templates!
