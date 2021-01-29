@@ -128,7 +128,7 @@ You can easily add a hook to do this conversion for you automatically:
 
 #+end_src
 
-Alternatively if you just want be reminded when you didn't use HTML, use =org-mime-confirm-when-no-mulitpart=:
+Alternatively if you just want be reminded when you didn't use HTML, use =org-mime-confirm-when-no-multipart=:
 
 #+begin_src emacs-lisp
 
