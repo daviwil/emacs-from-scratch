@@ -1,0 +1,230 @@
+#+title: Craft an Email Workflow with Org Mode
+
+* What will we cover?
+
+- Capturing emails for further processing
+- Creating query links to drive your mail workflow
+
+* Is it org-mu4e or mu4e-org?
+
+One thing to keep in mind throughout this video is that the naming of the variables and commands we will cover may be different depending on which version of mu4e you have installed!
+
+In mu4e 1.3.6, a new module called =mu4e-org= was added which improves upon the =org-mu4e= capture functions in previous versions.  We will try to cover both where necessary, but you should try to use 1.3.6 or later for best experience!
+
+* Adding =mu4e-=org= to our configuration
+
+This bit of configuration depends on which version of mu4e you have installed.  Add one of these lines to your mu4e configuration:
+
+#+begin_src emacs-lisp
+
+    ;; If mu4e version is less than 1.3.6
+    (require 'org-mu4e)
+
+    ;; Otherwise use this
+    (require 'mu4e-org)
+
+#+end_src
+
+* Let's create Mail.org
+
+To get things started, we will create a new Org Mode file called =Mail.org= in our folder containing Org files.
+
+We'll create a couple of headings for storing links to email messages in mu4e:
+
+- Follow Up
+- Read Later
+
+* Capturing emails for processing with capture templates
+
+Now we can create capture templates that create TODO items for emails that we'd like to act on at some point.
+
+I covered capture templates in [[https://youtu.be/PNE-mgkZ6HM?t=2662][Emacs From Scratch #6 - Organize Your Life with Org Mode]] so we won't go into general detail here, but I'll show you a few things that will be useful.
+
+Let's create two capture templates that will help populate the headings we created in Mail.org:
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+olp "~/org/Mail.org" "Follow Up")
+              "* TODO %a")
+        ("mr" "Read Later" entry (file+olp "~/org/Mail.org" "Read Later")
+              "* TODO %a")))
+
+#+end_src
+
+Now you can run =M-x mu4e-org-store-and-capture= to capture a link to the current e-mail with a capture template.
+
+*NOTE*: This is =org-mu4e-store-and-capture= on versions before 1.3.6!
+
+This command stores a link to the current email using the =org-store-link= command before invoking =org-capture= so that you can select the capture template to use for the selected email.
+
+Let's add some more things to the capture template!
+
+** Selected text from the mail
+
+You can use the =%i= template string to insert any selected text into the captured item:
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+headline "~/org/Mail.org" "Follow Up")
+              "* TODO %a\n\n  %i")
+        ("mr" "Read Later" entry (file+headline "~/org/Mail.org" "Read Later")
+              "* TODO %a\n\n  %i")))
+#+end_src
+
+This is great for reminding yourself *why* you need to follow up with a particular email!
+
+** Formatting the TODO title using mail details
+
+We can pull in details from the selected mail using the =%:keyword= syntax:
+
+- =%:subject= - The subject of the message
+- =%:from= - The full sender string including name and address
+- =%:fromname= - The display name of the sender
+- =%:fromaddress= - The email address of the sender
+- =%to=, =%:toname=, =%:toaddress= - Details of the recipient
+- =%:date= - The date of the message
+- =%:date-timestamp= - The date of the message as an active Org timestamp
+
+Let's use a couple of these to enhance our capture templates:
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+olp "~/org/Mail.org" "Follow Up")
+              "* TODO Follow up with %:fromname on %:subject\n%a\n\n%i")
+        ("mr" "Read Later" entry (file+olp "~/org/Mail.org" "Read Later")
+              "* TODO Read %:subject\n%a\n\n%i")))
+
+#+end_src
+
+** Scheduling mail for processing
+
+Another thing you can add to your capture template is a schedule or deadline timestamp to cause it to appear on your Org agenda!
+
+The =%t= template syntax will insert a timestamp for the current date and time:
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+olp "~/org/Mail.org" "Follow Up")
+              "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\n\n%i")
+        ("mr" "Read Later" entry (file+olp "~/org/Mail.org" "Read Later")
+              "* TODO Read %:subject\nSCHEDULED:%t\n%a\n\n%i")))
+
+#+end_src
+
+We can also calculate a date in the future by using the =%()= syntax to evaluate an arbitrary expression.  In this case we will use =org-insert-time-stamp= and =org-read-date= to generate a timestamp for two days from today:
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+olp "~/org/Mail.org" "Follow Up")
+              "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i")
+        ("mr" "Read Later" entry (file+olp "~/org/Mail.org" "Read Later")
+              "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i")))
+
+#+end_src
+
+Now that we've added timestamps for our mail tasks, we can see them in =org-agenda=!  Make sure to add the =Mail.org= file to =org-agenda-files=
+
+#+begin_src emacs-lisp
+
+    (setq org-agenda-files '("~/org/Mail.org"))
+
+#+end_src
+
+Now run =M-x org-agenda= and select today's agenda with =a=
+
+
+** Capturing mails immediately with no prompt
+
+This has all been great so far, but what if you want to capture emails without the need to confirm every time?
+
+There's an easy solution, just add =:immediate-finish t= to your templates!
+
+#+begin_src emacs-lisp
+
+    (setq org-capture-templates
+      `(("m" "Email Workflow")
+        ("mf" "Follow Up" entry (file+olp "~/org/Mail.org" "Follow Up")
+              "* TODO Follow up with %:fromname on %a\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%i" :immediate-finish t)
+        ("mr" "Read Later" entry (file+olp "~/org/Mail.org" "Read Later")
+              "* TODO Read %:subject\nSCHEDULED:%t\nDEADLINE: %(org-insert-time-stamp (org-read-date nil t \"+2d\"))\n\n%a\n\n%i" :immediate-finish t)))
+
+#+end_src
+
+** Adding custom actions for quick capturing
+
+Tired of running =org-capture= or =mu4e-org-store-and-capture=?  We can make this a lot more convenient!
+
+You can also define actions for capturing messages from the header and message views:
+
+#+begin_src emacs-lisp
+
+  (defun efs/capture-mail-follow-up (msg)
+    (interactive)
+    (call-interactively 'org-store-link)
+    (org-capture nil "mf"))
+
+  (defun efs/capture-mail-read-later (msg)
+    (interactive)
+    (call-interactively 'org-store-link)
+    (org-capture nil "mr"))
+
+  ;; Add custom actions for our capture templates
+  (add-to-list 'mu4e-headers-actions
+    '("follow up" . efs/capture-mail-follow-up) t)
+  (add-to-list 'mu4e-view-actions
+    '("follow up" . efs/capture-mail-follow-up) t)
+  (add-to-list 'mu4e-headers-actions
+    '("read later" . efs/capture-mail-read-later) t)
+  (add-to-list 'mu4e-view-actions
+    '("read later" . efs/capture-mail-read-later) t)
+
+#+end_src
+
+* Creating a mail processing workflow
+
+Special thanks to *ftrx* on Reddit for a [[https://www.reddit.com/r/emacs/comments/l4odm8/enhance_your_email_with_org_mode/gkq7bya/?utm_source=reddit&utm_medium=web2x&context=3][helpful suggestion]] that I used in this video!
+
+Now that we're capturing our emails to be processed in =Mail.org=, let's think about how we can drive the rest of our mail process from this file.
+
+Often times you need to check for different types of e-mail at different times.  We can encode these different types of mail as links in the =Mail.org= files using mu4e query links.
+
+Let's create a heading called "Queries" and add the following links under it:
+
+- [[mu4e:query:flag:unread AND NOT flag:trashed][Unread Mail]]
+- [[mu4e:query:date:today..now][Today's Messages]]
+- [[mu4e:query:date:7d..now][Last 7 Days]]
+- [[mu4e:query:flag:flagged][Flagged Emails]]
+- [[mu4e:query:prio:high][High Priority]]
+- [[mu4e:query:list:guix-patches.gnu.org][guix-patches]]
+
+If you want a command that will help store the link to the current query:
+
+#+begin_src emacs-lisp
+
+  (defun efs/store-link-to-mu4e-query ()
+    (interactive)
+    (let ((org-mu4e-link-query-in-headers-mode t))
+      (call-interactively 'org-store-link)))
+
+#+end_src
+
+Now you can easily store links to header queries, even containing search strings!
+
+See also [[https://www.djcbsoftware.nl/code/mu/mu4e/Org_002dmode-links.html][mu4e manual: Org links]] and [[https://www.djcbsoftware.nl/code/mu/mu4e/Queries.html#Queries][mu4e manual: Queries]]
+
+* What's next?
+
+We've covered a lot about reading, writing, and managing emails.  The next topics we will cover:
+
+- Managing contacts
+- Syncing and managing your calendar

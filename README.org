@@ -61,6 +61,8 @@ Here is a list of all the episode videos with links to the configuration we buil
 1. [[https://youtu.be/yZRyEhi4y44][Streamline Your E-mail Management with mu4e]] ([[file:show-notes/Emacs-Mail-01.org][Notes]])
 2. [[https://youtu.be/olXpfaSnf0o][Managing Multiple Email Accounts with mu4e and mbsync]] ([[file:show-notes/Emacs-Mail-02.org][Notes]])
 3. [[https://youtu.be/WiyqU7gmKsk][Compose and Send Email with Emacs]] ([[file:show-notes/Emacs-Mail-03.org][Notes]])
+4. [[https://youtu.be/aml36yZ-ANc][Enhance Your Emails with Org Mode]] ([[file:show-notes/Emacs-Mail-04.org][Notes]])
+5. [[https://youtu.be/dSZu4jwvaSs][Craft an Email Workflow with Org Mode]] ([[file:show-notes/Emacs-Mail-05.org][Notes]])
 
 * Usage Instructions
 
