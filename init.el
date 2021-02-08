@@ -32,7 +32,7 @@
   (auto-package-update-prompt-before-update t)
   (auto-package-update-hide-results t)
   :config
-  (auto-package-update-maybe))
+  (auto-package-update-maybe)
   (auto-package-update-at-time "09:00"))
 
 ;; NOTE: If you want to move everything out of the ~/.emacs.d folder
