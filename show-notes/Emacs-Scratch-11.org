@@ -1,0 +1,62 @@
+#+title: Keeping Your Emacs Packages Up to Date
+
+* A question you'll eventually ask yourself...
+
+"How do I update my packages?"
+
+Emacs won't remind you!  You have to remember to do it and initiate the process yourself.
+
+Luckily it's pretty easy!
+
+* The package listing
+
+Unfortunately there isn't a simple command you can use that will run the update process for you.
+
+We'll have to start up the package menu with =M-x list-packages=
+
+This view shows you all available packages and everything you have installed!  We will talk more about it in a future video.
+
+* Initiating an upgrade
+
+For now, the important thing to know is that you can mark all packages for upgrading using the =U= key (capital 'u').  This will mark all packages with updates so that they will be upgraded.
+
+You can also mark individual packages for upgrade using =u= (lower-case 'u').
+
+Once you've marked packages for upgrade, press =x= (lower-case 'x') to initiate the upgrade!
+
+After this completes, you should restart Emacs to make sure you load the latest versions of all your packages.
+
+* Updating your packages automatically
+
+There's a useful package called =auto-package-update= which will help you configure Emacs to automatically upgrade your packages on a regular basis!
+
+https://github.com/rranelli/auto-package-update.el
+
+#+begin_src emacs-lisp
+
+  (use-package auto-package-update
+    :custom
+    (auto-package-update-interval 7)
+    (auto-package-update-prompt-before-update t)
+    (auto-package-update-hide-results t)
+    :config
+    (auto-package-update-maybe)
+    (auto-package-update-at-time "09:00"))
+
+#+end_src
+
+You can also use =M-x auto-package-update-now= to update right now!
+
+* Should I update my packages automatically?
+
+It depends!
+
+Package updates can possibly break your configuration.  That doesn't mean you should be afraid to update, though.
+
+It is possible that you could back up your package folder using the =auto-package-update-before-hook=.  If you're interested in an approach for this, let me know in the comments!
+
+* What's next?
+
+In a future video, I'll go more in depth on Emacs' built-in package manager, =package.el=.
+
+I'm also planning to make videos on alternative package managers like =straight.el= so that you have even more options on how you can manage your configuration!
