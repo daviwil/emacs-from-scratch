@@ -6,6 +6,12 @@ We're developing this configuration live on YouTube, subscribe to [[https://www.
 
 If you're enjoying the videos and benefitting from the examples in this repo, please *consider [[https://github.com/sponsors/daviwil][becoming a sponsor]]* to support the development of future content!
 
+* How to Use This Configuration
+
+This repo is meant to be a companion to the Emacs From Scratch video series, serving as an example of a custom configuration build on top of vanilla Emacs.  I give instructions below for how to set it up to try it out, but it isn't meant to be used as your main configuration!  My goal here is to provide a working configuration that you can take inspiration from (and copy from directly).
+
+Just keep in mind that this repo isn't set up to be used directly as your own configuration!  Copy the code to your own dotfiles repository and have fun :)
+
 * Episodes
 
 This repo now contains configuration from multiple series on the channel!
