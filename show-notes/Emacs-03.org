@@ -1,0 +1,122 @@
+* Check out the GitHub repo
+
+https://github.com/daviwil/runemacs
+
+* Notes from previous streams
+
+We need to update the =load-theme= call to avoid a prompt at startup, =(load-theme 'doom-dracula t)=
+
+Thanks to Kyle Sexton and Nathan Chen for pointing out that all-the-icons is needed for doom-modeline to display correctly!
+
+* Basic Key Bindings
+
+=define-key= and =global-set-key=
+
+* Bindings with general.el
+
+https://github.com/noctuid/general.el#general-examples
+
+#+begin_src emacs-lisp
+
+(use-package general
+  :config
+  (general-evil-setup t)
+
+  (general-create-definer rune/leader-keys
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC"))
+
+(rune/leader-keys
+  "t"  '(:ignore t :which-key "toggles")
+  "tt" '(counsel-load-theme :which-key "choose theme"))
+
+#+end_src
+
+* Becoming Evil
+
+https://github.com/emacs-evil/evil
+https://github.com/emacs-evil/evil-collection
+
+#+begin_src emacs-lisp
+
+(defun rune/evil-hook ()
+  (dolist (mode '(custom-mode
+                  eshell-mode
+                  git-rebase-mode
+                  erc-mode
+                  circe-server-mode
+                  circe-chat-mode
+                  circe-query-mode
+                  sauron-mode
+                  term-mode))
+   (add-to-list 'evil-emacs-state-modes mode)))
+
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  :hook (evil-mode . rune/evil-hook)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
+  (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
+
+  ;; Use visual line motions even outside of visual-line-mode buffers
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init))
+
+;; Mention evil-collection-mode-list
+
+#+end_src
+
+https://github.com/emacs-evil/evil-collection#configuration
+
+If we want to be hardcore...
+
+#+begin_src emacs-lisp
+
+(defun rune/dont-arrow-me-bro ()
+  (interactive)
+  (message "Arrow keys are bad, you know?"))
+
+  ;; Disable arrow keys in normal and visual modes
+  (define-key evil-normal-state-map (kbd "<left>") 'rune/dont-arrow-me-bro)
+  (define-key evil-normal-state-map (kbd "<right>") 'rune/dont-arrow-me-bro)
+  (define-key evil-normal-state-map (kbd "<down>") 'rune/dont-arrow-me-bro)
+  (define-key evil-normal-state-map (kbd "<up>") 'rune/dont-arrow-me-bro)
+  (evil-global-set-key 'motion (kbd "<left>") 'rune/dont-arrow-me-bro)
+  (evil-global-set-key 'motion (kbd "<right>") 'rune/dont-arrow-me-bro)
+  (evil-global-set-key 'motion (kbd "<down>") 'rune/dont-arrow-me-bro)
+  (evil-global-set-key 'motion (kbd "<up>") 'rune/dont-arrow-me-bro)
+
+#+end_src
+
+* Hydra
+
+https://github.com/abo-abo/hydra
+
+#+begin_src emacs-lisp
+
+(use-package hydra)
+
+(defhydra hydra-text-scale (:timeout 4)
+  "scale text"
+  ("j" text-scale-increase "in")
+  ("k" text-scale-decrease "out"))
+  ("f" nil "finished" :exit t))
+
+(rune/leader-keys
+  "ts" '(hydra-text-scale/body :which-key "scale text"))
+
+#+end_src

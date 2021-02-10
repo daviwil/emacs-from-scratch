@@ -1,0 +1,16 @@
+#+title: Emacs from Scratch #1
+
+* The plan
+We're going to walk through a configuration of Emacs from scratch, starting with the most obvious improvements and then working our way to the more specialized changes as we proceed.
+
+* Brief demo of my config
+* Starting off with empty config, make the UI more minimal
+
+#+begin_src emacs-lisp
+
+(use-package command-log-mode)
+
+#+end_src
+
+* Set a theme
+* Set up Ivy

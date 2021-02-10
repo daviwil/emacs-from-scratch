@@ -1,0 +1,187 @@
+#+title: Modern Development with lsp-mode
+
+* Check out the GitHub repo
+
+https://github.com/daviwil/emacs-from-scratch
+
+* What is lsp-mode?
+
+- Documentation: https://emacs-lsp.github.io/lsp-mode/
+- Supported language servers: https://emacs-lsp.github.io/lsp-mode/page/languages/
+
+* Initial Configuration
+
+#+begin_src emacs-lisp
+
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :init
+    (setq lsp-keymap-prefix "C-c l")  ;; Or 'C-l', 's-l'
+    :config
+    (lsp-enable-which-key-integration t))
+
+#+end_src
+
+** Basic Completions
+
+- =completion-at-point= for completions
+- Signatures when writing methods (=C-n=, =C-p= to cycle signatures)
+
+** Hover
+
+** Find Definitions and References
+
+- =lsp-find-definition=: =C-c l g r=
+- =lsp-find-references=:  =C-c l g g=
+
+** Rename Symbol
+
+- =lsp-rename=: =C-c l r r=
+
+** Diagnostics
+
+- =flymake-show-diagnostics-buffer= to show diagnostics
+
+** Code Actions
+
+** Code Formatting
+
+- =lsp-format-buffer=: =C-c l == ==
+
+Configure formatting options for some languages with =lsp-<language>-format-= variables
+
+** Header Breadcrumb
+
+  #+begin_src emacs-lisp
+
+  (defun efs/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headerline-breadcrumb-mode))
+
+    :hook (lsp-mode . efs/lsp-mode-setup)
+
+  #+end_src
+
+* Better Completions with company-mode
+
+  #+begin_src emacs-lisp
+
+  (use-package company
+    :after lsp-mode
+    :hook (prog-mode . company-mode)
+    :bind (:map company-active-map
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+  (use-package company-box
+    :hook (company-mode . company-box-mode))
+
+  #+end_src
+
+* More UI Enhancements lsp-ui-mode
+
+Documentation: https://emacs-lsp.github.io/lsp-ui/
+
+#+begin_src emacs-lisp
+
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode))
+
+#+end_src
+
+** Documentation
+
+- =lsp-ui-doc-focus-frame= to enter the documentation frame to navigate and search around
+- =lsp-ui-doc-unfocus-frame= to leave documentation frame
+
+#+begin_src emacs-lisp
+
+    (setq lsp-ui-doc-position 'bottom)
+
+#+end_src
+
+** Sideline
+
+Configuration options: https://emacs-lsp.github.io/lsp-ui/#lsp-ui-sideline
+
+#+begin_src emacs-lisp
+
+    (setq lsp-ui-sideline-enable nil)
+    (setq lsp-ui-sideline-show-hover nil)
+
+#+end_src
+
+** Peek
+
+- =lsp-ui-peek-find-references= to show references inline (=M-n=, =M-p= to cycle)
+
+* lsp-treemacs
+
+Provides an even nicer UI on top of lsp-mode using Treemacs
+
+- =lsp-treemacs-symbols= - Show a tree view of the symbols in the current file
+- =lsp-treemacs-references= - Show a tree view for the references of the symbol under the cursor
+- =lsp-treemacs-error-list= - Show a tree view for the diagnostic messages in the project
+
+#+begin_src emacs-lisp
+
+(use-package lsp-treemacs
+  :after lsp)
+
+#+end_src
+
+* Quicker symbol searching with lsp-ivy
+
+#+begin_src emacs-lisp
+
+(use-package lsp-ivy)
+
+#+end_src
+
+* TypeScript
+
+#+begin_src emacs-lisp
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+#+end_src
+
+Install the =typescript-language-server=:
+
+#+begin_src sh
+
+npm install -g typescript-language-server
+
+#+end_src
+
+* C
+
+Install the =ccls= language server.
+
+* Bonus: Commenting lines
+
+=M-;= does comment, but the behavior sometimes isn't exactly what you'd expect.
+
+https://github.com/redguardtoo/evil-nerd-commenter
+
+#+begin_src emacs-lisp
+
+(use-package evil-nerd-commenter
+  :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+
+#+end_src
+
+* There's more to talk about later!
+
+- dap-mode for debugging
+- yasnippet
+- running compilers and unit test tools
+- language-specific videos

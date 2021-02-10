@@ -1,0 +1,186 @@
+* Check out the GitHub repo
+
+https://github.com/daviwil/emacs-from-scratch
+
+* Viewer Questions
+
+From *Kristoffer Balintona*:
+
+Again, thank you for the video. One thing that I think myself and some of your viewers would like clarification on is the distinction from visual-fill-column (from the melpa package) and visual-fill-mode (built-in) as well as their interaction. Based on reading some documentation, it seems that visual-fill-column-mode widens the right margin and can center the window. On the other hand. visual-fill-mode inserts line breaks automatically once you reach the window's margin. Thus, you can use them both independently but also in conjunction - which is what you have done.
+
+I also am confused about whether or not this will result in hard or soft wrapping. There are some cases where I don't want to change the actual contents of the page but would like to see it wrapped in the buffer. I don't know if visual-fill-column + visual-line does this.
+
+From *Konstantin Petrov*:
+
+Couple of questions about org:
+1. I use tags in org-mode. Can you tell how to set/edit tags using ivy/counsel tooling to search and select?
+2. Could you cover capturing (org-capture) and creating nicer menus for capture templates selection?
+
+* The Agenda
+
+Run =org-agenda= to see possible agenda views.
+
+#+begin_src emacs-lisp
+
+  (setq org-directory "~/Projects/Code/emacs-from-scratch/OrgFiles")
+  (setq org-agenda-files '("Tasks.org" "Birthdays.org" "Habits.org"))
+
+  ;; If you only want to see the agenda for today
+  ;; (setq org-agenda-span 'day)
+
+  (setq org-agenda-start-with-log-mode t)
+  (setq org-log-done 'time)
+  (setq org-log-into-drawer t)
+
+#+end_src
+
+
+* Scheduling and Deadlines
+
+- =org-schedule=
+- =org-deadline=
+- =org-time-stamp=
+- Repeated Tasks - https://orgmode.org/manual/Repeated-tasks.html#Repeated-tasks
+
+* Custom TODO states and Agendas
+
+#+begin_src emacs-lisp
+
+  (setq org-todo-keywords
+    '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+
+#+end_src
+
+Agenda query documentation: https://orgmode.org/manual/Custom-Agenda-Views.html#Custom-Agenda-Views
+
+#+begin_src emacs-lisp
+
+;; Configure custom agenda views
+(setq org-agenda-custom-commands
+  '(("d" "Dashboard"
+     ((agenda "" ((org-deadline-warning-days 7)))
+      (todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))
+      (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+
+    ("n" "Next Tasks"
+     ((todo "NEXT"
+        ((org-agenda-overriding-header "Next Tasks")))))
+
+
+    ("W" "Work Tasks" tags-todo "+work")
+
+    ;; Low-effort next actions
+    ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+     ((org-agenda-overriding-header "Low Effort Tasks")
+      (org-agenda-max-todos 20)
+      (org-agenda-files org-agenda-files)))
+
+    ("w" "Workflow Status"
+     ((todo "WAIT"
+            ((org-agenda-overriding-header "Waiting on External")
+             (org-agenda-files org-agenda-files)))
+      (todo "REVIEW"
+            ((org-agenda-overriding-header "In Review")
+             (org-agenda-files org-agenda-files)))
+      (todo "PLAN"
+            ((org-agenda-overriding-header "In Planning")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "BACKLOG"
+            ((org-agenda-overriding-header "Project Backlog")
+             (org-agenda-todo-list-sublevels nil)
+             (org-agenda-files org-agenda-files)))
+      (todo "READY"
+            ((org-agenda-overriding-header "Ready for Work")
+             (org-agenda-files org-agenda-files)))
+      (todo "ACTIVE"
+            ((org-agenda-overriding-header "Active Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "COMPLETED"
+            ((org-agenda-overriding-header "Completed Projects")
+             (org-agenda-files org-agenda-files)))
+      (todo "CANC"
+            ((org-agenda-overriding-header "Cancelled Projects")
+             (org-agenda-files org-agenda-files)))))))
+
+#+end_src
+
+
+* Refiling
+
+#+begin_src emacs-lisp
+
+(setq org-refile-targets
+      '(("Archive.org" :maxlevel . 1)))
+
+;; Save Org buffers after refiling!
+(advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+#+end_src
+
+* Capture Templates
+
+- Tasks
+- Meeting notes
+- Table entries
+- Journal entries
+
+#+begin_src emacs-lisp
+
+  (defun dw/read-file-as-string (path)
+    (with-temp-buffer
+      (insert-file-contents path)
+      (buffer-string)))
+
+  (setq org-capture-templates
+    `(("t" "Tasks / Projects")
+      ("tt" "Task" entry (file+olp "~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org" "Inbox")
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+      ("ts" "Clocked Entry Subtask" entry (clock)
+           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+
+      ("j" "Journal Entries")
+      ("jj" "Journal" entry
+           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
+           :clock-in :clock-resume
+           :empty-lines 1)
+      ("jm" "Meeting" entry
+           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
+
+      ("w" "Workflows")
+      ("we" "Checking Email" entry (file+olp+datetree ,(dw/get-todays-journal-file-name))
+           "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
+
+      ("m" "Metrics Capture")
+      ("mw" "Weight" table-line (file+headline "~/Projects/Code/emacs-from-scratch/OrgFiles/Metrics.org" "Weight")
+       "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
+
+#+end_src
+
+Bindings straight to templates
+
+#+begin_src emacs-lisp
+
+(define-key global-map (kbd "C-c j")
+  (lambda () (interactive) (org-capture nil "j")))
+
+#+end_src
+
+* Habit Tracking
+
+https://orgmode.org/manual/Tracking-your-habits.html
+
+#+begin_src emacs-lisp
+
+(require 'org-habit)
+(add-to-list 'org-modules 'org-habit)
+(setq org-habit-graph-column 60)
+
+#+end_src

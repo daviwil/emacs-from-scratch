@@ -14,16 +14,16 @@ This repo now contains configuration from multiple series on the channel!
 
 Here is a list of all the episode videos with links to the configuration we built for each one:
 
-1. [[https://www.youtube.com/watch?v=74zOY-vgkyw][Live-Coding a Custom Emacs Configuration from Scratch]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c0266ff684f670ecc5e41615c0282912e6615214][Code]])
-2. [[https://www.youtube.com/watch?v=IspAZtNTslY][Adding Helpful UI Improvements]] ([[https://github.com/daviwil/emacs-from-scratch/tree/43c0401355c7971cb4491690ee4b8449505a5d58][Code]])
-3. [[https://www.youtube.com/watch?v=xaZMwNELaJY][Key Bindings and Evil]] ([[https://github.com/daviwil/emacs-from-scratch/tree/29e542c79632853d85124019e47506cc0571cd05][Code]])
-4. [[https://youtu.be/INTu30BHZGk][Projectile and Magit]] ([[https://github.com/daviwil/emacs-from-scratch/tree/500370fa06889dad313e60473d73090fcfbe106d][Code]])
-5. [[https://www.youtube.com/watch?v=VcgjTEa0kU4][Org Mode Basics]] ([[https://github.com/daviwil/emacs-from-scratch/tree/1a13fcf0dd6afb41fce71bf93c5571931999fed8][Code]])
-6. [[https://youtu.be/PNE-mgkZ6HM][Organizing Your Life with Org Mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c55d0f5e309f7ed8ffa3c00bc35c75937a5184e4][Code]])
-7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] ([[https://github.com/daviwil/emacs-from-scratch/tree/9388cf6ecd9b44c430867a5c3dad5f050fdc0ee1][Code]])
-8. [[https://youtu.be/E-NAM9U5JYE][Build Your Own IDE with lsp-mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/6d078217a41134cc667f969430d150c50d03f448][Code]])
-9. [[https://youtu.be/wa_wZIuT9Vw][Learn to Love the Terminal Modes]] ([[https://github.com/daviwil/emacs-from-scratch/tree/bbfbc77b3afab0c14149e07d0ab08d275d4ba575][Code]])
-10. [[https://youtu.be/PMWwM8QJAtU][Effortless File Management with Dired]] ([[https://github.com/daviwil/emacs-from-scratch/blob/8c302a79bf5700f6ef0279a3daeeb4123ae8bd59/Emacs.org#dired][Code]])
+1. [[https://www.youtube.com/watch?v=74zOY-vgkyw][Live-Coding a Custom Emacs Configuration from Scratch]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c0266ff684f670ecc5e41615c0282912e6615214][Code]], [[file:show-notes/Emacs-01.org][Notes]])
+2. [[https://www.youtube.com/watch?v=IspAZtNTslY][Adding Helpful UI Improvements]] ([[https://github.com/daviwil/emacs-from-scratch/tree/43c0401355c7971cb4491690ee4b8449505a5d58][Code]], [[file:show-notes/Emacs-02.org][Notes]])
+3. [[https://www.youtube.com/watch?v=xaZMwNELaJY][Key Bindings and Evil]] ([[https://github.com/daviwil/emacs-from-scratch/tree/29e542c79632853d85124019e47506cc0571cd05][Code]], [[file:show-notes/Emacs-03.org][Notes]])
+4. [[https://youtu.be/INTu30BHZGk][Projectile and Magit]] ([[https://github.com/daviwil/emacs-from-scratch/tree/500370fa06889dad313e60473d73090fcfbe106d][Code]], [[file:show-notes/Emacs-04.org][Notes]])
+5. [[https://www.youtube.com/watch?v=VcgjTEa0kU4][Org Mode Basics]] ([[https://github.com/daviwil/emacs-from-scratch/tree/1a13fcf0dd6afb41fce71bf93c5571931999fed8][Code]], [[file:show-notes/Emacs-05.org][Notes]])
+6. [[https://youtu.be/PNE-mgkZ6HM][Organizing Your Life with Org Mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/c55d0f5e309f7ed8ffa3c00bc35c75937a5184e4][Code]], [[file:show-notes/Emacs-06.org][Notes]])
+7. [[https://youtu.be/kkqVTDbfYp4][Configure Everything with Org Babel]] ([[https://github.com/daviwil/emacs-from-scratch/tree/9388cf6ecd9b44c430867a5c3dad5f050fdc0ee1][Code]], [[file:show-notes/Emacs-07.org][Notes]])
+8. [[https://youtu.be/E-NAM9U5JYE][Build Your Own IDE with lsp-mode]] ([[https://github.com/daviwil/emacs-from-scratch/tree/6d078217a41134cc667f969430d150c50d03f448][Code]], [[file:show-notes/Emacs-08.org][Notes]])
+9. [[https://youtu.be/wa_wZIuT9Vw][Learn to Love the Terminal Modes]] ([[https://github.com/daviwil/emacs-from-scratch/tree/bbfbc77b3afab0c14149e07d0ab08d275d4ba575][Code]], [[file:show-notes/Emacs-09.org][Notes]])
+10. [[https://youtu.be/PMWwM8QJAtU][Effortless File Management with Dired]] ([[https://github.com/daviwil/emacs-from-scratch/blob/8c302a79bf5700f6ef0279a3daeeb4123ae8bd59/Emacs.org#dired][Code]], [[file:show-notes/Emacs-10.org][Notes]])
 11. [[https://youtu.be/dtjq68F2dXw][Keeping Your Emacs Packages Up to Date]] ([[https://github.com/daviwil/emacs-from-scratch/blob/4e921ccbe603d5fdd9c7f16c2418ac7322c8ab71/Emacs.org#automatic-package-updates][Code]], [[file:show-notes/Emacs-Scratch-11.org][Notes]])
 
 ** [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]

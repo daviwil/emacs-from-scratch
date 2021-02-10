@@ -1,0 +1,195 @@
+#+title: Using a Terminal With Your Favorite Shell
+
+* Check out the GitHub repo
+
+https://github.com/daviwil/emacs-from-scratch
+
+* term-mode
+
+#+begin_src emacs-lisp
+
+(use-package term
+  :config
+  (setq explicit-shell-file-name "bash")
+  ;;(setq explicit-zsh-args '())
+  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+
+#+end_src
+
+- =C-c C-p= / =C-c C-n= - go back and forward in the buffer's prompts (also =[[= and =]]= with evil-mode)
+- =C-c C-k= - Enter char-mode
+- =C-c C-j= - Return to line-mode
+- If you have =evil-collection= installed, =term-mode= will enter char mode when you use Evil's Insert mode
+- Caveat - editing the input line with Evil motions doesn't work
+
+NOTE: term-mode doesn't work on Windows: "Spawning child process: invalid argument"
+
+** For better color support
+
+Make sure the =tic= program is available on your machine (could be part of =ncurses= package).
+
+#+begin_src emacs-lisp
+
+(use-package eterm-256color
+  :hook (term-mode . eterm-256color-mode))
+
+#+end_src
+
+#+begin_src shell
+
+echo "Hello System Crafters!" | cowsay | lolcat -h 0.7
+
+#+end_src
+
+** ansi-term
+
+=ansi-term= is a specialization of =term-mode.=
+
+Minor differences:
+- C-x is prefix key instead of C-c
+- Buffers are managed slightly differently
+
+Same caveats for Windows still apply.
+
+* vterm (emacs-libvterm)
+
+https://github.com/akermu/emacs-libvterm/
+
+NOTE: This one needs to compile a native library, make sure to install its dependencies!
+
+Differences to =term=:
+
+- Written in native code, much faster and better emulation
+- There is no =line-mode= / =char-mode= split
+
+#+begin_src emacs-lisp
+
+  (use-package vterm
+    :commands vterm
+    :config
+    (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *")
+    ;;(setq vterm-shell "zsh")
+    (setq vterm-max-scrollback 10000))
+
+#+end_src
+
+- Read docs on =vterm-use-vterm-prompt-detection-method= for prompt detection
+
+https://github.com/akermu/emacs-libvterm/tree/01a1332ebb11daca5408f7fcb8a08454b0176e79#shell-side-configuration
+
+* shell-mode
+
+Runs a shell program on your computer in a more controlled buffer.  Does not operate as a terminal emulator.
+
+- =C-c C-p= / =C-c C-n= - go back and forward in the buffer's prompts
+- =M-p= / =M-n= - go back and forward in the input history
+- =C-c C-u= - delete the current input string backwards up to the cursor
+- =counsel-shell-history= - A searchable history of commands typed into the shell
+
+Pros/Cons
+
+Better colors:
+
+https://github.com/atomontage/xterm-color
+
+#+begin_src emacs-lisp
+
+(setq comint-output-filter-functions
+      (remove 'ansi-color-process-output comint-output-filter-functions))
+
+(add-hook 'shell-mode-hook
+          (lambda ()
+            ;; Disable font-locking in this buffer to improve performance
+            (font-lock-mode -1)
+            ;; Prevent font-locking from being re-enabled in this buffer
+            (make-local-variable 'font-lock-function)
+            (setq font-lock-function (lambda (_) nil))
+            (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter nil t)))
+
+#+end_src
+
+In Windows if you like PowerShell you can use this config:
+
+#+begin_src emacs-lisp
+
+;; Kudos to Jeffrey Snover: https://docs.microsoft.com/en-us/archive/blogs/dotnetinterop/run-powershell-as-a-shell-within-emacs
+(setq explicit-shell-file-name "powershell.exe")
+(setq explicit-powershell.exe-args '())
+
+#+end_src
+
+* Eshell
+
+#+begin_src emacs-lisp
+
+(defun efs/configure-eshell ()
+  ;; Save command history when commands are entered
+  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+  ;; Truncate buffer for performance
+  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+  ;; Bind some useful keys for evil-mode
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+  (evil-normalize-keymaps)
+
+  (setq eshell-history-size         10000
+        eshell-buffer-maximum-lines 10000
+        eshell-hist-ignoredups t
+        eshell-scroll-to-bottom-on-input t))
+
+(use-package eshell
+  :hook (eshell-first-time-mode . efs/configure-eshell))
+
+#+end_src
+
+- =counsel-eshell-history= - A searchable history of commands typed into the shell
+
+#+begin_src emacs-lisp
+
+  (use-package eshell-git-prompt)
+
+  :config
+  (eshell-git-prompt-use-theme 'powerline))
+
+#+end_src
+
+Running programs in a term-mode buffer:
+
+#+begin_src emacs-lisp
+
+  (with-eval-after-load 'esh-opt
+    (setq eshell-destroy-buffer-when-process-dies t)
+    (setq eshell-visual-commands '("htop" "zsh" "vim")))
+
+#+end_src
+
+Pros:
+
+- Replicates Bash with cross-platform elisp functions
+- Consistent shell experience across all OSes
+- You can run Emacs commands and arbitrary Emacs Lisp in the shell
+- You can pipe output of commands directly into an Emacs buffer
+- Supports TRAMP!
+
+Cons:
+
+- Completions are not great out of the box compared to Bash
+- Eshell commands can be very slow compared to the real programs
+- Piping is much less functional than in "real" shells
+- Subshell syntax is a bit different - =${}= instead of =$()=
+- Programs that read input (like language REPLs) can operate strangely
+- Tools that depend on setting shell environment (=nvm=, =virtualenv=, etc) don't work
+- Can be a little slow on Windows
+
+Interesting articles:
+- https://ambrevar.xyz/emacs-eshell/index.html
+- https://ambrevar.xyz/emacs-eshell-versus-shell/index.html
+
+* Recommendations
+
+- Use =term= or =ansi-term= if you're on Linux / macOS and don't care as much about output speed
+- Use =vterm= if you're on Linux / macOS and want faster output and better terminal emulation
+- Use =shell= on Windows if you want to use PowerShell, Bash, or WSL
+- Use =eshell= on any OS if you want a consistent shell experience everywhere with Lisp superpowers full Emacs integration

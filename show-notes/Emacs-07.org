@@ -1,0 +1,116 @@
+#+title: Configure Everything with Org Babel
+
+* Check out the GitHub repo
+
+https://github.com/daviwil/emacs-from-scratch
+
+* Org Babel
+
+Execution: =C-c C-c= (output, value results)
+
+https://orgmode.org/worg/org-contrib/babel/
+https://orgmode.org/worg/org-contrib/babel/languages.html
+
+#+begin_src emacs-lisp :results value
+
+42
+
+#+end_src
+
+#+RESULTS:
+: 42
+
+#+begin_src emacs-lisp
+
+(org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t)
+    (python . t)))
+
+(setq org-confirm-babel-evaluate nil)
+
+#+end_src
+
+* Structure Templates
+
+#+begin_src emacs-lisp
+
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
+
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+
+#+end_src
+
+* Setting Up the Config
+
+Apply the same configuration to every block:
+
+#+PROPERTY: header-args:emacs-lisp :tangle ./init-new.el
+
+* Tangling Output
+
+#+begin_src emacs-lisp
+
+(org-babel-tangle)
+(org-babel-tangle-file "~/Projects/Code/emacs-from-scratch/Emacs.org")
+
+#+end_src
+
+* Configuring Other Apps
+
+#+begin_src emacs-lisp
+
+  (push '("conf-unix" . conf-unix) org-src-lang-modes)
+
+#+end_src
+
+#+begin_src conf :tangle .config/some-app/config
+
+value=42
+
+#+end_src
+
+To create output directories automatically, add =:mkdirp yes=
+
+[[file:~/.dotfiles/Desktop.org::*mpv][My mpv configuration]]
+
+* Noweb Blocks
+
+Enables you to pass variables into a source block!
+
+#+NAME: the-value
+#+begin_src emacs-lisp
+55
+#+end_src
+
+Add =:noweb yes=!
+
+#+begin_src conf :tangle .config/some-app/config :noweb yes
+
+value=<<the-value>>
+
+#+end_src
+
+[[file:~/.dotfiles/Systems.org::*Per-System Settings][Per-System Settings]]
+
+* Tips
+
+- Automatically tangle on save
+- Should I also commit tangle output?
+
+#+begin_src emacs-lisp
+
+;; Automatically tangle our Emacs.org config file when we save it
+(defun efs/org-babel-tangle-config ()
+  (when (string-equal (buffer-file-name)
+                      (expand-file-name "~/Projects/Code/emacs-from-scratch/Emacs.org"))
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle)))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+
+#+end_src
