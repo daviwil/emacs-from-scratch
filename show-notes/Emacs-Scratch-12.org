@@ -1,0 +1,95 @@
+#+title: Making Emacs Start Faster
+
+* Why is Emacs so slow to start up?
+
+Is it actually slow with no config? Run =emacs -Q= to find out!
+
+So why is it so much slower with our configuration?
+
+* Let's find out how long it's taking!
+
+Add a function to =emacs-startup-hook= to print out the duration of Emacs startup:
+
+#+begin_src emacs-lisp
+
+  (defun efs/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+             (format "%.2f seconds"
+                     (float-time
+                     (time-subtract after-init-time before-init-time)))
+             gcs-done))
+
+  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
+#+end_src
+
+All startup behavior is happening in the =normal-top-level= function!
+
+A helpful manual page is [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Startup-Summary.html][Summary: Sequence of Actions at Startup]].
+
+* The most important tip: don't load any packages!
+
+=use-package= gives you a few different ways to defer package loading:
+
+- =:hook= - Package will be loaded the first time one of the hooks is invoked
+- =:bind= - Package will be loaded the first time one of the key bindings is used
+- =:commands= - Package will be loaded when one of the commands are used
+- =:mode= - Package will be loaded the first time a file with a particular extension is opened
+- =:after= - Load this package after other specific packages are loaded
+- =:defer= - If you don't use any of the other options, this one will defer loading until after startup
+
+There are a [[https://github.com/jwiegley/use-package#getting-started][few other options]] =use-package= provides, but these are all the most likely ones you would use.
+
+The strategy is to look at all of your =use-package= expressions and decide whether it *really* needs to be loaded immediately at startup!
+
+If you want to make sure a package gets loaded at startup despite the use of any of the options above, use =:demand t=.
+
+Let's try it!
+
+#+begin_src emacs-lisp
+
+      "fde" '(lambda () (interactive) (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
+
+#+end_src
+
+* with-eval-after-load can be useful!
+
+=with-eval-after-load= is a macro that causes a section of code to be executed only after a particular package gets loaded.
+
+#+begin_src emacs-lisp
+
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+        (python . t)))
+
+    (push '("conf-unix" . conf-unix) org-src-lang-modes))
+
+#+end_src
+
+If you need to split up your configuration into multiple sections, this is one way to ensure you don't accidentally cause a package to load too early!
+
+* Tweaking the garbage collector
+
+One other common performance trick is to reduce the number of times the garbage collector will run during the startup process.
+
+Set the =gc-cons-threshold= high at the beginning of your =init.el=:
+
+#+begin_src emacs-lisp
+
+  ;; The default is 800 kilobytes.  Measured in bytes.
+  (setq gc-cons-threshold (* 50 1000 1000))
+
+#+end_src
+
+Then bring it back down at the end of your =init.el=:
+
+#+begin_src emacs-lisp
+
+  ;; Make gc pauses faster by decreasing the threshold.
+  (setq gc-cons-threshold (* 2 1000 1000))
+
+#+end_src
+
+Another option is to use this package: https://gitlab.com/koral/gcmh/

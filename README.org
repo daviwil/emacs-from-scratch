@@ -31,6 +31,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 9. [[https://youtu.be/wa_wZIuT9Vw][Learn to Love the Terminal Modes]] ([[https://github.com/daviwil/emacs-from-scratch/tree/bbfbc77b3afab0c14149e07d0ab08d275d4ba575][Code]], [[file:show-notes/Emacs-09.org][Notes]])
 10. [[https://youtu.be/PMWwM8QJAtU][Effortless File Management with Dired]] ([[https://github.com/daviwil/emacs-from-scratch/blob/8c302a79bf5700f6ef0279a3daeeb4123ae8bd59/Emacs.org#dired][Code]], [[file:show-notes/Emacs-10.org][Notes]])
 11. [[https://youtu.be/dtjq68F2dXw][Keeping Your Emacs Packages Up to Date]] ([[https://github.com/daviwil/emacs-from-scratch/blob/4e921ccbe603d5fdd9c7f16c2418ac7322c8ab71/Emacs.org#automatic-package-updates][Code]], [[file:show-notes/Emacs-Scratch-11.org][Notes]])
+12. [[https://youtu.be/9i_9hse_Y08][How to Cut Emacs Start Up Time in Half!]] (Code, [[file:show-notes/Emacs-Scratch-12.org][Notes]])
 
 ** [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]
 
