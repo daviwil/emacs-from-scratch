@@ -27,6 +27,24 @@ The following variables are used to tweak some of the configuration pieces for u
 
 In this document I've added links in many places that lead you to documentation for the various packages we use.  If you're looking at this file in Emacs, you can put your cursor on a link and press =C-c C-o= or run =M-x org-open-at-point= to open the link in your web browser.
 
+* Startup Performance
+
+#+begin_src emacs-lisp
+
+  ;; The default is 800 kilobytes.  Measured in bytes.
+  (setq gc-cons-threshold (* 50 1000 1000))
+
+  (defun efs/display-startup-time ()
+    (message "Emacs loaded in %s with %d garbage collections."
+             (format "%.2f seconds"
+                     (float-time
+                       (time-subtract after-init-time before-init-time)))
+             gcs-done))
+
+  (add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
+#+end_src
+
 * Package System Setup
 
 Emacs has a built in package manager but it doesn't make it easy to automatically install packages on a new system the first time you pull down your configuration.  [[https://github.com/jwiegley/use-package][use-package]] is a really helpful package used in this configuration to make it a lot easier to automate the installation and configuration of everything else we use.
@@ -154,6 +172,7 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
   (use-package general
+    :after evil
     :config
     (general-create-definer efs/leader-keys
       :keymaps '(normal insert visual emacs)
@@ -162,7 +181,8 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
     (efs/leader-keys
       "t"  '(:ignore t :which-key "toggles")
-      "tt" '(counsel-load-theme :which-key "choose theme")))
+      "tt" '(counsel-load-theme :which-key "choose theme")
+      "fde" '(lambda () (interactive) (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
 
   (use-package evil
     :init
@@ -197,7 +217,8 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 #+begin_src emacs-lisp
 
-(use-package command-log-mode)
+  (use-package command-log-mode
+    :commands command-log-mode)
 
 #+end_src
 
@@ -234,11 +255,12 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
 
 #+begin_src emacs-lisp
 
-(use-package which-key
-  :init (which-key-mode)
-  :diminish which-key-mode
-  :config
-  (setq which-key-idle-delay 1))
+  (use-package which-key
+    :defer 0
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 1))
 
 #+end_src
 
@@ -269,6 +291,7 @@ This configuration uses [[https://evil.readthedocs.io/en/latest/index.html][evil
     (ivy-mode 1))
 
   (use-package ivy-rich
+    :after ivy
     :init
     (ivy-rich-mode 1))
 
@@ -309,6 +332,7 @@ This Prescient configuration is optimized for use in System Crafters videos and 
 #+begin_src emacs-lisp
 
   (use-package helpful
+    :commands (helpful-callable helpful-variable helpful-command helpful-key)
     :custom
     (counsel-describe-function-function #'helpful-callable)
     (counsel-describe-variable-function #'helpful-variable)
@@ -326,7 +350,8 @@ This is an example of using [[https://github.com/abo-abo/hydra][Hydra]] to desig
 
 #+begin_src emacs-lisp
 
-  (use-package hydra)
+  (use-package hydra
+    :defer t)
 
   (defhydra hydra-text-scale (:timeout 4)
     "scale text"
@@ -394,6 +419,7 @@ This section contains the basic configuration for =org-mode= plus the configurat
 
   (use-package org
     :pin org
+    :commands (org-capture org-agenda)
     :hook (org-mode . efs/org-mode-setup)
     :config
     (setq org-ellipsis " ▾")
@@ -524,7 +550,6 @@ This section contains the basic configuration for =org-mode= plus the configurat
 #+begin_src emacs-lisp
 
   (use-package org-bullets
-    :after org
     :hook (org-mode . org-bullets-mode)
     :custom
     (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
@@ -553,12 +578,13 @@ To execute or export code in =org-mode= code blocks, you'll need to set up =org-
 
 #+begin_src emacs-lisp
 
-  (org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
-      (python . t)))
+  (with-eval-after-load 'org
+    (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+        (python . t)))
 
-  (push '("conf-unix" . conf-unix) org-src-lang-modes)
+    (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
 #+end_src
 
@@ -570,12 +596,13 @@ You can add more =src= block templates below by copying one of the lines and cha
 
 #+begin_src emacs-lisp
 
-  ;; This is needed as of Org 9.2
-  (require 'org-tempo)
+  (with-eval-after-load 'org
+    ;; This is needed as of Org 9.2
+    (require 'org-tempo)
 
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+    (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+    (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+    (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
 #+end_src
 
@@ -670,7 +697,8 @@ Try these commands with =M-x=:
 
 #+begin_src emacs-lisp
 
-  (use-package lsp-ivy)
+  (use-package lsp-ivy
+    :after lsp)
 
 #+end_src
 
@@ -686,7 +714,7 @@ Try these commands with =M-x=:
     ;; (lsp-enable-dap-auto-configure nil)
     ;; :config
     ;; (dap-ui-mode 1)
-
+    :commands dap-debug
     :config
     ;; Set up Node debugging
     (require 'dap-node)
@@ -759,6 +787,7 @@ You can use the pyvenv package to use =virtualenv= environments in Emacs.  The =
 #+begin_src emacs-lisp
 
   (use-package pyvenv
+    :after python-mode
     :config
     (pyvenv-mode 1))
 
@@ -807,6 +836,7 @@ We also use [[https://github.com/sebastiencs/company-box][company-box]] to furth
     (setq projectile-switch-project-action #'projectile-dired))
 
   (use-package counsel-projectile
+    :after projectile
     :config (counsel-projectile-mode))
 
 #+end_src
@@ -818,13 +848,15 @@ We also use [[https://github.com/sebastiencs/company-box][company-box]] to furth
 #+begin_src emacs-lisp
 
   (use-package magit
+    :commands magit-status
     :custom
     (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
   ;; NOTE: Make sure to configure a GitHub token before using this package!
   ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
   ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
-  (use-package forge)
+  (use-package forge
+    :after magit)
 
 #+end_src
 
@@ -872,6 +904,7 @@ Run a terminal with =M-x term!=
 #+begin_src emacs-lisp
 
   (use-package term
+    :commands term
     :config
     (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
     ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
@@ -968,7 +1001,8 @@ For more thoughts on Eshell, check out these articles by Pierre Neidhardt:
           eshell-hist-ignoredups t
           eshell-scroll-to-bottom-on-input t))
 
-  (use-package eshell-git-prompt)
+  (use-package eshell-git-prompt
+    :after eshell)
 
   (use-package eshell
     :hook (eshell-first-time-mode . efs/configure-eshell)
@@ -1014,7 +1048,7 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
 - =*= - Lots of other auto-marking functions
 - =k= / =K= - "Kill" marked items (refresh buffer with =g= / =g r= to get them back)
 - Many operations can be done on a single file if there are no active marks!
- 
+
 **** Copying and Renaming files
 
 - =C= - Copy marked files (or if no files are marked, the current file)
@@ -1061,12 +1095,14 @@ Dired is a built-in file manager for Emacs that does some pretty amazing things!
       "h" 'dired-single-up-directory
       "l" 'dired-single-buffer))
 
-  (use-package dired-single)
+  (use-package dired-single
+    :commands (dired dired-jump))
 
   (use-package all-the-icons-dired
     :hook (dired-mode . all-the-icons-dired-mode))
 
   (use-package dired-open
+    :commands (dired dired-jump)
     :config
     ;; Doesn't work as expected!
     ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
@@ -1102,8 +1138,13 @@ This is an example of configuring another non-Emacs application using org-mode. 
 
 #+end_src
 
+* Runtime Performance
+
+Dial the GC threshold back down so that garbage collection happens more frequently but in less time.
+
 #+begin_src emacs-lisp
 
-(message "Init file finished loading!")
+  ;; Make gc pauses faster by decreasing the threshold.
+  (setq gc-cons-threshold (* 2 1000 1000))
 
 #+end_src

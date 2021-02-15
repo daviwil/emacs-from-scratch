@@ -8,6 +8,18 @@
 ;; Make frame transparency overridable
 (defvar efs/frame-transparency '(90 . 90))
 
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
+(defun efs/display-startup-time ()
+  (message "Emacs loaded in %s with %d garbage collections."
+           (format "%.2f seconds"
+                   (float-time
+                     (time-subtract after-init-time before-init-time)))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'efs/display-startup-time)
+
 ;; Initialize package sources
 (require 'package)
 
@@ -87,6 +99,7 @@
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (use-package general
+  :after evil
   :config
   (general-create-definer efs/leader-keys
     :keymaps '(normal insert visual emacs)
@@ -95,7 +108,8 @@
 
   (efs/leader-keys
     "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+    "tt" '(counsel-load-theme :which-key "choose theme")
+    "fde" '(lambda () (interactive) (find-file (expand-file-name "~/.emacs.d/Emacs.org")))))
 
 (use-package evil
   :init
@@ -120,7 +134,8 @@
   :config
   (evil-collection-init))
 
-(use-package command-log-mode)
+(use-package command-log-mode
+  :commands command-log-mode)
 
 (use-package doom-themes
   :init (load-theme 'doom-palenight t))
@@ -132,9 +147,10 @@
   :custom ((doom-modeline-height 15)))
 
 (use-package which-key
-  :init (which-key-mode)
+  :defer 0
   :diminish which-key-mode
   :config
+  (which-key-mode)
   (setq which-key-idle-delay 1))
 
 (use-package ivy
@@ -156,6 +172,7 @@
   (ivy-mode 1))
 
 (use-package ivy-rich
+  :after ivy
   :init
   (ivy-rich-mode 1))
 
@@ -178,6 +195,7 @@
   (ivy-prescient-mode 1))
 
 (use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
   :custom
   (counsel-describe-function-function #'helpful-callable)
   (counsel-describe-variable-function #'helpful-variable)
@@ -187,7 +205,8 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package hydra)
+(use-package hydra
+  :defer t)
 
 (defhydra hydra-text-scale (:timeout 4)
   "scale text"
@@ -235,6 +254,7 @@
 
 (use-package org
   :pin org
+  :commands (org-capture org-agenda)
   :hook (org-mode . efs/org-mode-setup)
   :config
   (setq org-ellipsis " ▾")
@@ -357,7 +377,6 @@
   (efs/org-font-setup))
 
 (use-package org-bullets
-  :after org
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
@@ -370,19 +389,21 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
-(org-babel-do-load-languages
-  'org-babel-load-languages
-  '((emacs-lisp . t)
-    (python . t)))
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+      'org-babel-load-languages
+      '((emacs-lisp . t)
+      (python . t)))
 
-(push '("conf-unix" . conf-unix) org-src-lang-modes)
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
-;; This is needed as of Org 9.2
-(require 'org-tempo)
+(with-eval-after-load 'org
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
 
-(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-(add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun efs/org-babel-tangle-config ()
@@ -414,7 +435,8 @@
 (use-package lsp-treemacs
   :after lsp)
 
-(use-package lsp-ivy)
+(use-package lsp-ivy
+  :after lsp)
 
 (use-package dap-mode
   ;; Uncomment the config below if you want all UI panes to be hidden by default!
@@ -422,7 +444,7 @@
   ;; (lsp-enable-dap-auto-configure nil)
   ;; :config
   ;; (dap-ui-mode 1)
-
+  :commands dap-debug
   :config
   ;; Set up Node debugging
   (require 'dap-node)
@@ -452,6 +474,7 @@
   (require 'dap-python))
 
 (use-package pyvenv
+  :after python-mode
   :config
   (pyvenv-mode 1))
 
@@ -482,16 +505,19 @@
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
+  :after projectile
   :config (counsel-projectile-mode))
 
 (use-package magit
+  :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
 ;; NOTE: Make sure to configure a GitHub token before using this package!
 ;; - https://magit.vc/manual/forge/Token-Creation.html#Token-Creation
 ;; - https://magit.vc/manual/ghub/Getting-Started.html#Getting-Started
-(use-package forge)
+(use-package forge
+  :after magit)
 
 (use-package evil-nerd-commenter
   :bind ("M-/" . evilnc-comment-or-uncomment-lines))
@@ -500,6 +526,7 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 (use-package term
+  :commands term
   :config
   (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
   ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
@@ -538,7 +565,8 @@
         eshell-hist-ignoredups t
         eshell-scroll-to-bottom-on-input t))
 
-(use-package eshell-git-prompt)
+(use-package eshell-git-prompt
+  :after eshell)
 
 (use-package eshell
   :hook (eshell-first-time-mode . efs/configure-eshell)
@@ -560,12 +588,14 @@
     "h" 'dired-single-up-directory
     "l" 'dired-single-buffer))
 
-(use-package dired-single)
+(use-package dired-single
+  :commands (dired dired-jump))
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
 (use-package dired-open
+  :commands (dired dired-jump)
   :config
   ;; Doesn't work as expected!
   ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
@@ -577,3 +607,6 @@
   :config
   (evil-collection-define-key 'normal 'dired-mode-map
     "H" 'dired-hide-dotfiles-mode))
+
+;; Make gc pauses faster by decreasing the threshold.
+(setq gc-cons-threshold (* 2 1000 1000))
