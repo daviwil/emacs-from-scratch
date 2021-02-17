@@ -1,0 +1,311 @@
+#+title: Hey Emacs, Don't Move My Windows!
+
+* Pop up windows are annoying.
+
+For many "transient" buffers, Emacs splits your current window to display the buffer!
+
+This can be disruptive to your workflow, especially when you have split your windows in a particular way to perform a task.
+
+We've talked about =winner-mode= before and how you can use it to "undo" window layout changes.
+
+Now let's talk about how to prevent Emacs from changing your artisan window layouts!
+
+* How =display-buffer= works
+
+When a new buffer is created for display, Emacs uses the =display-buffer= function to figure out where this buffer should be placed on screen.
+
+=display-buffer= consults a series of sources *in order* which contain rules for how windows are selected (or created) to display new buffers:
+
+- =display-buffer-overriding-action= - Used by package code to temporarily override rules
+- =display-buffer-alist= - User-defined buffer placement rules (nil by default)
+- The =action= argument of =display-buffer= - The caller of =display-buffer= can specify its own rules
+- =display-buffer-base-action= - User-defined default placement actions (nil by default)
+- =display-buffer-fallback-action= - Emacs' default placement rules that you see in action every day
+
+=display-buffer= builds a list of action functions to try by combining all of these sources and then runs each function in order until one of them returns a window in which the buffer can be displayed.  The action function's job is to find (or create) the window (or frame!) in which the buffer will be displayed.
+
+We can invoke this behavior by evaluating this Emacs Lisp:
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*")
+  (display-buffer (get-buffer-create "Test!"))
+
+#+end_src
+
+[[https://www.gnu.org/software/emacs/manual/html_mono/emacs.html#Window-Choice][Emacs Manual: Window Choice]] (How =display-buffer= works)
+
+* What is an action function?
+
+Before we take a look at the default placement actions, let's talk about what an action function actually does.
+
+Here's the "signature" of an action function:
+
+#+begin_example
+
+  (display-buffer-same-window BUFFER ALIST)
+
+#+end_example
+
+=display-buffer= will pass the buffer to be displayed and an association list that the action function can read to look for customization parameters.
+
+*Quick review:* an association list is a list of key/value pairs where values can be accessed by their associated key.
+
+Here's an example of an =alist= that might be sent to the display action function:
+
+#+begin_src emacs-lisp
+
+   '((mode . (org-mode helpful-mode help-mode))
+     (reusable-frames . t))
+
+#+end_src
+
+Here are some alist keys you might want to know about:
+
+** inhibit-same-window
+
+Configures whether the currently focused window can (or cannot) be used for displaying the buffer:
+
+- =nil= - The current window *can* be used- =t= - The current window *cannot* be used
+
+** reusable-frames
+
+Configures whether the buffer shows up on the current frame or other open frames.
+
+- =nil= - Only consider windows on the current frame
+- =t= - Consider windows on any frame
+- =visible= - Consider windows only on visible frames
+- =0= - Consider windows on visible or "iconified" frames
+- You can also pass a frame object to restrict to only that frame
+
+** inhibit-switch-frame
+
+Prevents a non-current frame from being "raised" if the window is placed there if the value is =t=.
+
+** mode
+
+Restricts window selection to those displaying buffers of a certain major mode.  You can pass either a symbol of a major mode or a list of symbols representing major modes:
+
+#+begin_src emacs-lisp
+
+   '((mode . (org-mode helpful-mode help-mode)))
+
+#+end_src
+
+** window-width and window-height
+
+Controls whether the window width or window height might be changed when displaying the buffer and how much it will be changed:
+
+- =nil= - Don't change the size of the window
+- An integer number - total width or height in columns or lines, respectively
+- A floating-point number - the percentage relative to the width or height of the window that the window should be
+- A function that will be called to return the desired width or height
+
+** There are other possibilities!
+
+[[https://www.gnu.org/software/emacs/manual/html_mono/elisp.html#Buffer-Display-Action-Alists][Emacs Lisp Manual: Buffer Display Action Alists]]
+
+Keep in mind that not every display action function uses all of these settings!  Check the documentation for more details.
+
+* Examining the default placement actions
+
+Here is the default value of =display-buffer-fallback-action= (on Emacs 27.1):
+
+#+begin_src emacs-lisp
+
+  ((display-buffer--maybe-same-window
+    display-buffer-reuse-window
+    display-buffer--maybe-pop-up-frame-or-window
+    display-buffer-in-previous-window
+    display-buffer-use-some-window
+    display-buffer-pop-up-frame))
+
+#+end_src
+
+Each of these functions are evaluated *in order* to determine where a new buffer gets placed!
+
+*NOTE:* This variable isn't intended to be changed by the user!  We will talk about two ways you can override its behavior in a moment.
+
+Let's examine what each of these actions do:
+
+** display-buffer--maybe-same-window (display-buffer-same-window)
+
+This function uses the function =same-window-p= to decide whether =display-buffer-same-window= should be used for placing the window.  =same-window-p= looks at =same-window-buffer-names= or =same-window-regexps=, configured by the user, to see if the buffer name matches anything in either of those variables.
+
+If =same-window-p= returns =t= for the buffer, =display-buffer-same-window= will be invoked.  This function will display the new buffer in the currently selected window, basically the window that has keyboard focus.
+
+*NOTE*: Before trying these examples, make sure =display-buffer-alist= is =nil= otherwise the actions specified will have no effect!
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer--maybe-same-window . ()))
+
+#+end_src
+
+** display-buffer-reuse-window
+
+This function places the buffer the current window if it's already displaying that buffer or picks another available window in the same frame otherwise.
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-reuse-window . ()))
+
+  (display-buffer (current-buffer)
+                  '(display-buffer-reuse-window . ()))
+
+  (display-buffer (current-buffer)
+                  '(display-buffer-reuse-window . ((inhibit-same-window . t))))
+#+end_src
+
+** display-buffer--maybe-pop-up-frame-or-window
+
+Creates a popup frame or window depending on whether =pop-up-frames= or =pop-up-windows= is non-nil, respectively.  The default is for =pop-up-windows= to be =t=.  This causes many windows to pop up in a separate window!
+
+- =display-buffer-pop-up-frame= is called when =pop-up-frames= is non-nil
+- =display-buffer-pop-up-window= is called when =pop-up-windows= is non-nil
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer--maybe-pop-up-frame-or-window . ()))
+
+#+end_src
+
+** display-buffer-in-previous-window
+
+Places the buffer in a previously-used window for that buffer:
+
+- Use the window specified by any =previous-window= alist entry, provided it is not the selected window.
+- Use a window that showed the buffer before, provided it is not the selected window.
+- Use the selected window if it is either specified by a =previous-window= alist entry or showed the before.
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-previous-window . ()))
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-previous-window . ((inhibit-same-window . t))))
+
+#+end_src
+
+** display-buffer-use-some-window
+
+Find any usable window to place the buffer.  Uses a heuristic to determine the best window to pick, like whether the window was most recently used.  Skips any "dedicated" windows.
+
+** display-buffer-pop-up-frame
+
+Displays the buffer in a new frame by calling the function stored in =pop-up-frame-function=  (=make-frame= by default).
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-pop-up-frame . ()))
+
+#+end_src
+
+If no other option is possible (which seems pretty unlikely), Emacs will pop up the buffer in a new frame.
+
+* Other placement actions
+
+Aside from those used by default in Emacs, there are even more built-in display action functions that you can use in your own configuration:
+
+** display-buffer-reuse-mode-window
+
+Reuse a window that's already showing a buffer of the same major mode as the new buffer.  With the =mode= alist entry, you can restrict the set of major modes that apply for this.
+
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*helpful command: special-lispy-clone*"
+                  '(display-buffer-reuse-mode-window . ((mode . (helpful-mode)))))
+
+#+end_src
+
+** display-buffer-in-side-window
+
+Displays the buffer in a "side window" of the current frame.  This one is particularly useful with custom buffer rules which we'll discuss later.
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ()))
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ((side . bottom))))
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ((side . right))))
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ((side . left))))
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ((side . left)
+                                                     (window-width . 15))))
+  (display-buffer "*scratch*"
+                  '(display-buffer-in-side-window . ((side . top)
+                                                     (window-height . 5))))
+#+end_src
+
+** display-buffer-at-bottom
+
+Displays the buffer in the bottom-most window of the current frame, either reusing one that is there (if it has the same buffer) or creating one if there is no existing horizontal split.
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-at-bottom . ()))
+
+  (display-buffer (current-buffer)
+                  '(display-buffer-at-bottom . ()))
+#+end_src
+
+** display-buffer-no-window
+
+Never display the buffer in a window.  This requires that the =allow-no-window= option to be set to =t=!
+
+#+begin_src emacs-lisp
+
+  (display-buffer "*scratch*"
+                  '(display-buffer-no-window . ((allow-no-window . t))))
+
+#+end_src
+
+** And even more!
+
+Check out the wide variety of pre-defined display action functions in the Emacs Lisp manual.
+
+[[https://www.gnu.org/software/emacs/manual/html_mono/elisp.html#Buffer-Display-Action-Functions][Emacs Lisp Manual: Buffer Display Action Functions]]
+
+* Overriding the default placement actions
+
+Instead of changing the =display-buffer-fallback-action= variable directly, you can change the user-customizable variable =display-buffer-base-action=.
+
+#+begin_src emacs-lisp
+
+  ;; Prefer to reuse existing windows, especially those showing a buffer
+  ;; of the same mode
+  (setq display-buffer-base-action
+    '((display-buffer-reuse-window
+       display-buffer-reuse-mode-window
+       display-buffer-same-window
+       display-buffer-in-previous-window)))
+
+  ;; You can also customize those actions with an alist
+  (setq display-buffer-base-action
+    '((display-buffer-reuse-window
+       display-buffer-reuse-mode-window
+       display-buffer-same-window
+       display-buffer-in-previous-window)
+      . ((mode . (org-mode helpful-mode help-mode)))))
+
+#+end_src
+
+* What's next?
+
+In the next video we'll go even deeper and learn how to customize buffer placement using custom logic per buffer!
+
+We will learn how to customize =display-buffer-alist= for this purpose and we'll also look at how we can write our own custom display action function for even further control!

@@ -63,6 +63,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 5. [[https://youtu.be/T9kygXveEz0][Give Emacs Psychic Completion Powers with prescient.el]] ([[file:show-notes/Emacs-Tips-Prescient.org][Notes]])
 6. [[https://youtu.be/XZjyJG-sFZI][Teach Emacs to Keep Your Folders Clean]] ([[https://github.com/daviwil/emacs-from-scratch/blob/a57d99ba80276926a2b68521f9a9d23dc173a628/Emacs.org][Code]], [[file:show-notes/Emacs-Tips-Cleaning.org][Notes]])
 7. [[https://youtu.be/nZ_T7Q49B8Y][Managing Encrypted Passwords with Emacs]] ([[file:show-notes/Emacs-Tips-Pass.org][Notes]])
+8. [[https://youtu.be/-H2nU0rsUMY][Hey Emacs, Don't Move My Windows!]] ([[file:show-notes/Emacs-Tips-DisplayBuffer-01.org][Notes]])
 
 ** [[https://www.youtube.com/watch?v=yZRyEhi4y44&list=PLEoMzSkcN8oM-kA19xOQc8s0gr0PpFGJQ][Emacs Mail]]
 
