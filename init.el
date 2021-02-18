@@ -580,6 +580,7 @@
 
 (use-package dired
   :ensure nil
+  :after evil-collection
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
   :custom ((dired-listing-switches "-agho --group-directories-first"))
