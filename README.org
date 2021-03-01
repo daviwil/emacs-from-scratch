@@ -39,6 +39,7 @@ Here is a list of all the episode videos with links to the configuration we buil
 2. [[https://youtu.be/XXpgzyeYh_4][Types, Conditionals, and Loops]] ([[file:show-notes/Emacs-Lisp-02.org][Notes]])
 3. [[https://youtu.be/EqgkAUHw0Yc][Defining Functions and Commands]] ([[file:show-notes/Emacs-Lisp-03.org][Notes]])
 4. [[https://youtu.be/tq4kTNL1VD8][Defining Variables and Scopes]] ([[file:show-notes/Emacs-Lisp-04.org][Notes]])
+5. [[https://youtu.be/J7d2LmivyyM][Reading and Writing Buffers in Practice]] ([[file:show-notes/Emacs-Lisp-05.org][Notes]], [[https://github.com/daviwil/dotcrafter.el/blob/8d507eda31e08a789c38a5d729866eb4cda6abaf/dotcrafter.el][Code]])
 
 ** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
 
