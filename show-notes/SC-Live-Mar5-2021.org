@@ -1,0 +1,151 @@
+#+title: System Crafters Live! - Mar 5, 2021
+
+* Emacs Native Comp is going to change *everything*
+
+** What is it?
+
+This is a new development in Emacs where Emacs Lisp code can now be compiled directly to native machine code for pretty major performance and responsiveness gains.
+
+It uses a library called =libgccjit= to use the compiler mechanics of GCC (GNU Compiler Collection) to translate Emacs Lisp to machine code on demand.
+
+** How do I get it?
+
+If you clone the Emacs repository from Savannah, you can check out the =feature/native-comp= branch:
+
+#+begin_src sh
+
+  git clone https://git.savannah.gnu.org/git/emacs.git -b feature/native-comp
+
+#+end_src
+
+You can then follow the Emacs build instructions in the file =INSTALL= to build Emacs correctly for your system.  The only changes to those instructions would be to add the =--with-native-compilation= compiler parameter and use =NATIVE_FULL_AOT=1= when running =make= so that all of Emacs' bundled Emacs Lisp gets compiled to native during the build process.
+
+We're not going to build it today because it takes a while :)
+
+If you're using macOS: https://github.com/d12frosted/homebrew-emacs-plus
+
+If you're on Windows, this Reddit post can be helpful:
+
+https://www.reddit.com/r/emacs/comments/lxabxs/outline_of_how_to_compile_emacs28_with_nativecomp/
+
+** If you're using Guix...
+
+Use the =flat= repository!  There is an =emacs-native-comp= package there that will take care of everything for you.
+
+https://github.com/flatwhatson/guix-channel
+
+#+begin_src emacs-lisp
+
+  (cons* (channel
+          (name 'flat)
+          (url "https://github.com/flatwhatson/guix-channel.git")
+          ;; (commit
+          ;;  "302f8a4f7e56cb3b484de9fe86617a3aaf20098c")
+          (introduction
+           (make-channel-introduction
+            "33f86a4b48205c0dc19d7c036c85393f0766f806"
+            (openpgp-fingerprint
+             "736A C00E 1254 378B A982  7AF6 9DBE 8265 81B6 4490"))))
+         %default-channels)
+
+#+end_src
+
+** Benchmarks
+
+Some benchmarking steps: https://github.com/shshkn/emacs.d/blob/master/docs/nativecomp.md (thanks elken!)
+
+https://www.emacswiki.org/emacs/EmacsLispBenchmark
+
+#+begin_src emacs-lisp
+
+  ;; Interpreted Emacs Lisp
+  (benchmark-run 1000
+    (let* ((list (mapcar 'random (make-list 100 most-positive-fixnum)))
+          (i (length list)))
+      (while (> i 1)
+        (let ((b list))
+          (while (cdr b)
+            (when (< (cadr b) (car b))
+              (setcar b (prog1 (cadr b)
+                          (setcdr b (cons (car b) (cddr b))))))
+            (setq b (cdr b))))
+        (setq i (1- i)))
+      list))
+
+  ;; Byte compilation
+  (benchmark-run-compiled 3000
+    (let* ((list (mapcar 'random (make-list 100 most-positive-fixnum)))
+          (i (length list)))
+      (while (> i 1)
+        (let ((b list))
+          (while (cdr b)
+            (when (< (cadr b) (car b))
+              (setcar b (prog1 (cadr b)
+                          (setcdr b (cons (car b) (cddr b))))))
+            (setq b (cdr b))))
+        (setq i (1- i)))
+      list))
+
+  (setq dw/compiled-benchmark
+    (native-compile
+      (lambda ()
+        (let* ((list (mapcar 'random (make-list 100 most-positive-fixnum)))
+              (i (length list)))
+          (while (> i 1)
+            (let ((b list))
+              (while (cdr b)
+                (when (< (cadr b) (car b))
+                  (setcar b (prog1 (cadr b)
+                              (setcdr b (cons (car b) (cddr b))))))
+                (setq b (cdr b))))
+            (setq i (1- i)))
+          list))))
+
+  ;; Native compilation
+  (setq comp-speed 2)
+  (benchmark-run-compiled 3000
+    (funcall dw/compiled-benchmark))
+
+#+end_src
+
+** When is it coming?
+
+A tweet from the native-comp creator, Andrea Corallo, yesterday:
+
+https://twitter.com/Koral_001/status/1367571866437754882
+
+"Eli (#emacs maintainer) is working on #gccemacs #native-comp with the goal of having it merged."
+
+It appears that this branch is being prepared to merge into =master= for Emacs 28.1!  The feature won't be turned on by default in Emacs yet, though.
+
+The =NEWS= file in the =feature/native-comp= branch has been updated to mention a finalized compilation flag =--with-native-compilation= (hat tip to 'undecided' in the Discord!)
+
+https://github.com/emacs-mirror/emacs/commit/4f90b0b6e6249597cf2e1450b5b9d7f6522c049f
+
+** Silencing the warnings!
+
+#+begin_src emacs-lisp
+
+  (setq comp-async-report-warnings-errors nil)
+
+#+end_src
+
+* Trying out Eglot, an alternative to lsp-mode
+
+Eglot is another client for the Language Server Protocol in Emacs.
+
+The main difference between it and =lsp-mode= is that Eglot attempts to use as much Emacs-native integration as possible without introducing new user interface concepts.
+
+How does it work? https://github.com/joaotavora/eglot#how-does-eglot-work
+
+** Setting it up
+
+Make sure to disable all =lsp-mode= hooks first!
+
+#+begin_src emacs-lisp
+
+  (use-package eglot)
+
+#+end_src
+
+* Community Chat - Q&A
