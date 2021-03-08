@@ -1,0 +1,363 @@
+#+title: The Absolute Beginner's Guide to Emacs
+
+* Welcome!
+
+If this is your first time here, this channel is about crafting your own system configuration using free and open source tools like GNU Emacs, GNU Guix, and more!
+
+I've made about 50 videos on Emacs for this channel, but the one thing I haven't done yet is make a video that's strictly for those who have either never used Emacs or only used it very little.
+
+In this video, I'm going to give you *exactly* what you need to get started using Emacs and understand the basic concepts and key bindings of the editor.  I know this video might seem long, but I've got chapter markers in the timeline below so that you can easily jump around to different parts if you want to use it as a reference.
+
+Let's get started!
+
+* Installation
+
+Emacs can be installed on GNU/Linux, macOS and Windows.
+
+The latest stable version is 27.1, so it's best to try and find that version for your operating system.  However, much of what I will show you should work on many previous versions of Emacs.
+
+** GNU/Linux
+
+GNU/Linux is the easiest OS for installing and using Emacs.  It is available in (pretty much) every Linux distribution's package manager, typically under the name =emacs=, so it's easy to find!
+
+Just keep in mind that your distribution may have an older version of Emacs in their package repository (possibly version 26) so you might need to find another source to install the latest version.
+
+*** GUI or Terminal?
+
+On Linux, there are often =emacs-no-x= packages that don't include the graphical UI if you don't need it.  There are no major differences in behavior between GUI and terminal Emacs so you can use whichever you feel most comfortable with.
+
+One major benefit of graphical Emacs is the ability to use multiple fonts for text display and a full range of colors.  This is why my presentation looks the way it does!
+
+** macOS
+
+Installation on =macOS= with Homebrew is easy!  There's a default recipe called =emacs= which can be installed with the following command:
+
+#+begin_src sh
+
+  brew install --cask emacs
+
+#+end_src
+
+An alternative recipe called [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs Plus]] provides additional options for customizing your Emacs install, check out its README to learn how to use it.
+
+You can also download a .app for Emacs from the site https://emacsformacosx.com/
+
+** Windows
+
+On Windows, you can [[http://mirror.keystealth.org/gnu/emacs/windows/emacs-27/emacs-27.1-x86_64-installer.exe][download Emacs]] directly from the GNU website!
+
+If you use MSYS2, you can install it using Pacman:
+
+#+begin_src sh
+
+  pacman -S mingw-w64-x86_64-emacs
+
+#+end_src
+
+You can also install it using [[https://chocolatey.org/][Chocolatey]]:
+
+#+begin_src sh
+
+  choco install emacs
+
+#+end_src
+
+* Basic Concepts
+
+Let's talk about the basic things you need to understand about Emacs to use it effectively!
+
+* The User Interface
+
+Emacs has a menu and tool bar like many conventional graphical programs.  They can be useful at first to learn the functionality that is available, but I think that you won't need them for very long!
+
+Note that the menu bar actually is present in the terminal version of Emacs!
+
+If you're coming from another IDE or editor, you might expect to see a file tree on the left side of the window.  This isn't provided by Emacs by default, but it's easy to add through community packages!  There are other ways to show files in Emacs that are even better, in my opinion.
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Menu-Bar.html][Emacs Manual: The Menu Bar]]
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tool-Bars.html][Emacs Manual: Tool Bars]]
+
+* Windows and Frames
+
+The concept of a "window" is different in Emacs than what you probably know from using graphical computing environments.  In modern desktop environments, a window is a graphical interface of a program which is managed by the window manager of the desktop environment, usually with buttons to close or minimize it.
+
+In Emacs, a window is more like a "pane" in the desktop window of Emacs.  A window in Emacs always displays a buffer.  Windows can also be split in arbitrary ways, both horizontally and vertically, so that you can create whatever window layout you like.  Each of these windows can show different buffers or even the same buffer!
+
+What you think of as a window in typical desktop environments, Emacs calls a "frame"!  Emacs can display multiple frames (desktop windows) at the same time.  These frames all share the same internal state and buffers.  Some people never use more than one frame, others use many frames.  It all depends on how you prefer to use Emacs!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Basic-Window.html#Basic-Window][Emacs Manual: Concepts of Emacs Windows]]
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Frames.html#Frames][Emacs Manual: Frames and Graphical Displays]]
+
+* Buffers
+
+A buffer holds text and other information that is usually displayed in a window.  The most obvious example is a buffer that contains the contents of a file for the purpose of editing it.
+
+However, there are many types of special buffers that are used only for displaying temporary information or user interface elements!  The Magit package provides an excellent interface for Git inside of a custom Emacs buffer.
+
+Buffers can be one of the more confusing aspects of Emacs to beginners because you don't have any indication of what buffers are open until you try to switch to another buffer.
+
+Some important buffers you will definitely see when you use Emacs:
+
+- =*scratch*= - Basically like a blank sheet of paper for taking notes, writing temporary Emacs Lisp expressions, or whatever you want!
+- =*Messages*= - This contains log messages and all the text that gets written to the echo area at the bottom of the screen
+- =*Warnings*= - A list of potential errors that may be displayed from time to time
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Buffers.html#Buffers][Emacs Manual: Using Multiple Buffers]]
+
+* The Mode Line
+
+When coming from other editors, you might expect to see a "status bar" at the bottom of the main editor window that gives you information about the state of the current buffer and the editor.  Emacs also has this, but does it slightly differently!
+
+The mode line is a line of text displayed at the bottom of every window (pane) in Emacs.  It displays information about the current buffer you're viewing and also global status information:
+
+- The line and column of the cursor
+- The major mode of the buffer
+- The minor modes active in the buffer (or globally in Emacs)
+
+The major difference between the mode line and the status bar is that there is a mode line under *every* visible window, so when you split the window, you'll see multiple mode lines!  There are benefits to this even though it takes up extra screen space.
+
+The mode line is fully customizable and can be made to look very nice either through your own configuration or from community packages!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Mode-Line.html][Emacs Manual: The Mode Line]]
+
+* The Echo Area and Minibuffer
+
+The echo area is a line at the very bottom of the frame which displays informational text when you perform certain operations in Emacs.
+
+It also turns into a prompt at times when you run a command that needs to accept user input; this prompt is called the "minibuffer"!  You can think of it like a temporary buffer that is used for interacting with the user.  It can also expand its height to be slightly larger than a single line when needed.
+
+One example of the minibuffer in use can be seen when we attempt to run a command by name.
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Echo-Area.html][Emacs Manual: The Echo Area]]
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer.html#Minibuffer][Emacs Manual: The Minibuffer]]
+
+* Commands
+
+In Emacs, there are a variety of built in commands that enable a lot of interesting and useful behavior, especially things that aren't specifically for text editing!  You can think of Emacs as more of a personal productivity suite than a plain text editor.
+
+To run a command, you can press ~Alt+x~ (or ~M-x~ in Emacs lingo).  This will bring up a prompt where you can type in the name of the command to be run.
+
+This prompt features a completion system (like many prompts in Emacs) so you can press ~TAB~ to show all possible commands that you can run.
+
+Try out the following commands:
+
+- =dired= ([[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html#Dired][Manual]]) - Check out my video about Dired
+- =calendar= ([[https://www.gnu.org/software/emacs/manual/html_node/emacs/Calendar_002fDiary.html#Calendar_002fDiary][Manual]])
+- =eshell= ([[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][Manual]])
+- =tetris= :) ([[https://www.gnu.org/software/emacs/manual/html_node/emacs/Amusements.html#Amusements][Manual]])
+
+New commands can be installed into Emacs using community packages, and you can also write your own!  We'll cover this in another video.
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Commands.html][Emacs Manual: Keys and Commands]]
+
+* Major and Minor Modes
+
+In other editors, there is usually functionality that gets enabled for files with a particular extension, e.g. Python programming functionality for =.py= files.
+
+Emacs also has this!  This functionality is provided through something called a "major mode."  A major mode provides the primary functionality for a particular buffer and it is usually activated based on the extension of a file you open in that buffer.
+
+As we've seen before, some buffers are not files and have special functionality!  This functionality also comes from custom major modes.  In this case, the major mode is being activated using a command, typically with the name of the mode.
+
+The major mode is what we see down in the mode line which indicates what type of buffer we are looking it.
+
+There can only be one major mode active in a buffer at once!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Modes.html][Emacs Manual: Major and Minor Modes]]
+
+** Minor Modes
+
+Minor modes are different in that many minor modes can be active in a single buffer, and even globally across Emacs.
+
+Minor modes typically provide helpful functionality that isn't specific to the major mode of the current buffer, but things you might need to customize your workflow or even change the display of things in Emacs.
+
+Try out =hl-line-mode= and =global-hl-line-mode= as an example of local and global minor modes!
+
+* Basic Key Bindings
+
+Emacs is most efficient and productive when you focus on keyboard-based control.  The key binding system in Emacs is one of the most flexible and customizable I've ever seen; once you start customizing Emacs' bindings for your own personal workflow, you'll see how limited other programs are by comparison.
+
+I'm going to cover some basic keybindings that you'll want to learn for basic everyday use.  In future videos I'll go much more in depth about Emacs' own special keybindings that you can use to make text editing and your general workflow a lot more efficient!
+
+** Understanding Emacs Key Bindings
+
+You will often see people write out the key bindings in a specific format when explaining things.  Let's quickly cover what everything means since you will see it often!
+
+- ~C-c~ - hold the Ctrl key and press the letter 'c'
+- ~C-x C-s~ - hold the Ctrl key and press the letters 'x' then 's' while still holding Ctrl
+- ~C-x b~ - hold the Ctrl key and press 'x', then release Ctrl and press 'b'
+- ~M-x~ - hold the Alt key and press 'x' (you will see this often like =M-x find-file=)
+- ~M-g C-s~ - hold the Alt key and press the letter 'g', release Alt, hold Ctrl and press 's'
+
+These single-letters can be interpreted as follows:
+
+- ~C~ - Ctrl
+- ~M~ - Alt (Meta in Emacs lingo)
+- ~S~ - Shift
+- ~s~ - Super (Windows key)
+
+Generally when you see a capital ~C~, ~M~, or ~S~ hyphened together with another key, those should all be pressed together, i.e. ~C-M-s~ or ~M-S-d~.
+
+One last important thing to mention are the two main key prefixes that have special meaning:
+
+- ~C-x~ - This is a prefix for all of Emacs' primary key bindings like ~C-x C-f~
+- ~C-c~ - This is considered to be a combination of bindings created by active major and minor modes or by the user!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Key-Sequences.html][Emacs Manual: Key Sequences]]
+
+* Opening and Saving Files
+
+To open a file in Emacs, press ~C-x C-f~ (=find-file=).  This will bring up a prompt in the minibuffer so that you can type in the file name.
+
+You can also navigate through directories by deleting the directory path and using ~TAB~ to complete parts of directory and file names!
+
+When you've opened a file into a buffer, you can make edits to it and then save the file with ~C-x C-s~ (=save-buffer=).
+
+You can also save the buffer to a different file ("Save as" in other editors) with ~C-x C-w~ (=write-file=).
+
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Visiting-Files.html#Visiting-Files][Emacs Manual: Visiting Files]]
+[[https://www.gnu.org/software/emacs/manual/html_node/elisp/Saving-Buffers.html#Saving-Buffers][Emacs Manual: Saving Buffers]]
+
+* Switching Buffers
+
+As we talked about before, Emacs can have many buffers open at the same time but you will only see the buffers that are currently open in a window.
+
+If you want to switch between buffers, you can use the ~C-x b~ (=switch-to-buffer=) binding to be prompted for a buffer to switch to.  This prompt features completions, so press ~TAB~ at any time to see the possible buffers based on the current text you've entered.
+
+There's also ~C-x C-b~ (=list-buffers=) which will show you a full listing of all the buffers that are open in Emacs.
+
+Once you start customizing Emacs, there are a variety of packages that make this even easier and enable you to customize it for your workflow!
+
+You can also easily move between buffers using the ~C-x <left arrow>~ and ~C x <right arrow>~ keys!
+
+(See, I remembered :)
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/List-Buffers.html#List-Buffers][Emacs Manual: Listing Existing Buffers]]
+
+* Cutting and Copying Text
+
+This is an area which always confuses new Emacs users!  Many programs across Linux and Windows use ~C-c~ to copy text and ~C-x~ to copy and delete the selected text (cut).
+
+This is not the case in Emacs!  As we mentioned before, these two key bindings are actually special key prefixes in Emacs so they aren't used for cut and copy.
+
+In Emacs, to "kill" text means to "cut" it, basically copy it and delete it.  The most common thing you will do is to kill a region, either to just delete the text or to cut it to be pasted somewhere else.
+
+But to kill a region, you first need to select one!  You can begin marking a region using ~C-SPC~ (=set-mark-command=) then use the arrow keys to move the cursor to expand or shrink the selection.
+
+Now that you have a region selected, you can use ~C-w~ (=kill-region=) to cut the text or ~M-w~ (=kill-ring-save=) to copy it.
+
+One interesting aspect of killing text is that it gets stored in the "kill ring" to be used later.  We will discuss this in a future episode!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Killing.html][Emacs Manual: Killing and Moving Text]]
+
+* Pasting Text
+
+In typical Emacs style, the concept of "pasting" text has a different name: "yank."
+
+You can press ~C-y~ to yank (paste) the most recent text from the kill ring back into this buffer.
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Yanking.html#Yanking][Emacs Manual: Yanking]]
+
+* CUA Mode
+
+If you *must* have the old ~C-c~ (copy) ~C-x~ (cut) and ~C-v~ (paste) behavior that you're familiar with, you can turn on the CUA mode using the menu item "Options -> Cut/Paste with C-x/C-c/C-v (CUA Mode)".
+
+This will make the cut and copy key bindings work when you've selected a region of text with the mouse or keyboard.  It will also turn ~C-v~ into a Paste keybinding which will do what you expect!
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/CUA-Bindings.html#CUA-Bindings][Emacs Manual: CUA Bindings]]
+
+* Undo and Redo
+
+You can undo changes to a buffer by pressing ~C-_~ (Ctrl+underscore) to run the =undo= command.  An alternative binding which is easier to press is ~C-/~
+
+To redo something that you deleted with undo, press ~C-g C-_~, but note that pressing ~C-_~ again right after this will keep redoing things that you've undo'ed!  It will then cycle back to undoing once you've reached the end of your redo history.
+
+As you can see, Emacs' undo system operates differently than what you're used to!  There are packages that can replace this with more understood behavior; we will talk about them in another video.
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Undo.html][Emacs Manual: Undo]]
+[[https://stackoverflow.com/a/3529243][StackOverflow answer about how to undo and redo]]
+
+* Cancelling Operations
+
+Sometimes you might run a command that you want to cancel before it completes.  For this you can press ~C-g~ (Ctrl+g).  This interrupts any active command and brings you back to a normal state in Emacs.
+
+One example is showing any prompt, like the one for the (=find-file=) command.  If you decide you want to cancel that prompt, just press ~C-g~.
+
+Sometimes you might need to press it repeatedly before you can fully get back to normal!
+
+If Emacs ever seems to be hung, try this key binding first before killing the process.
+
+* Learning More Key Bindings
+
+There are two ways to figure out more key bindings for Emacs, especially when editing different types of files:
+
+- As we talked about before, look at the menu bar for common commands and their keys
+- Run the command =describe-bindings=
+- Run the command =describe-key= (~C-h k~) to learn what command is bound to a specific key combination!
+
+* The Help System
+
+We'll cover this in detail in another video, but the whole Emacs manual is built in to Emacs and you can find help on any function or variable in Emacs using the =describe-*= functions!
+
+* Configuring Emacs
+
+There are two ways to configure Emacs to customize its behavior.  We won't go in depth on either of these in this video, I just want to point them out to you since it will be an obvious question you might have!
+
+** The Customization UI
+
+Emacs provides a full user interface for customizing all options in the editor.  To access it, run the command =customize=.
+
+You can either navigate through the settings hierarchy to see what is available or put your cursor in the search box, type a term, then press ~ENTER~.
+
+Each setting will have an input field of some kind that you can change by putting your cursor in the box and editing the value.  Once you're finished editing, you can click the "Apply" button to save the changes.
+
+Try searching for "tab width" in the search box!
+
+** The =init.el= file
+
+Once you've become sufficiently comfortable with Emacs, you'll want to investigate how to configure Emacs using the =init.el= file.  Emacs can be completely configured and extended using Lisp code!
+
+In your configuration file, you can write your own functions and commands to add new behavior to Emacs.  This is where a lot of the true power of Emacs comes into play!
+
+Check out my series [[https://www.youtube.com/watch?v=74zOY-vgkyw&list=PLEoMzSkcN8oPH1au7H6B7bBJ4ZO7BXjSZ][Emacs From Scratch]] if you want to learn how to build up a modern Emacs configuration from scratch using the =init.el= file and a bunch of community packages.
+
+* What's next?
+
+This video should give you much of what you need to know to start using Emacs!  However, we weren't able to cover many things in depth.
+
+I'm going to start making more videos in a new series called Emacs Essentials which will cover many of these topics at a deeper level so that you can go from being a beginner at Emacs to an advanced user by the end of it.
+
+I've already been making a ton of other videos about Emacs on this channel, so you should definitely check out my playlists if you want to learn a lot more while I'm building out the Emacs Essentials series:
+
+- [[https://www.youtube.com/watch?v=74zOY-vgkyw&list=PLEoMzSkcN8oPH1au7H6B7bBJ4ZO7BXjSZ][Emacs From Scratch]]
+- [[https://www.youtube.com/watch?v=wKTKmE1wLyw&list=PLEoMzSkcN8oMHJ6Xil1YdnYtlWd5hHZql][Emacs Tips]]
+- [[https://www.youtube.com/watch?v=f7xB2fFk1tQ&list=PLEoMzSkcN8oNPbEMYEtswOVTvq7CVddCS][Emacs Desktop Environment]]
+- [[https://www.youtube.com/watch?v=E-NAM9U5JYE&list=PLEoMzSkcN8oNvsrtk_iZSb94krGRofFjN][Emacs IDE]]
+- [[https://www.youtube.com/watch?v=yZRyEhi4y44&list=PLEoMzSkcN8oM-kA19xOQc8s0gr0PpFGJQ][Emacs Mail]]
+- [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]
+
+Also, if you want to know a little more about what Emacs is capable of, check out my video [[https://youtu.be/bEfYm8sAaQg][5 Reasons to Learn Emacs in 2021]]!
+
+* Demo Configuration
+
+This configuration is not intended to be used!  However, if you're curious:
+
+Put this text in a file called =demo.el=:
+
+#+begin_src emacs-lisp
+
+  ;; Make the colors and text less eye-strainy
+  (load-theme 'tango-dark t)
+  (set-face-attribute 'default nil :height 200)
+
+  ;; I mindlessly press ESC, so stop me from wreaking havoc
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+#+end_src
+
+Run Emacs with the configuration:
+
+#+begin_src emacs-lisp
+
+  emacs -Q -l demo.el
+
+#+end_src

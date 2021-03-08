@@ -33,6 +33,10 @@ Here is a list of all the episode videos with links to the configuration we buil
 11. [[https://youtu.be/dtjq68F2dXw][Keeping Your Emacs Packages Up to Date]] ([[https://github.com/daviwil/emacs-from-scratch/blob/4e921ccbe603d5fdd9c7f16c2418ac7322c8ab71/Emacs.org#automatic-package-updates][Code]], [[file:show-notes/Emacs-Scratch-11.org][Notes]])
 12. [[https://youtu.be/9i_9hse_Y08][How to Cut Emacs Start Up Time in Half!]] (Code, [[file:show-notes/Emacs-Scratch-12.org][Notes]])
 
+** [[https://www.youtube.com/playlist?list=PLEoMzSkcN8oPZvSdewHG8uApD7THlLLCV][Emacs Essentials]]
+
+1. [[https://youtu.be/48JlgiBpw_I][The Absolute Beginner's Guide to Emacs]] ([[file:show-notes/Emacs-Beginners-01.org][Notes]])
+
 ** [[https://www.youtube.com/watch?v=RQK_DaaX34Q&list=PLEoMzSkcN8oPQtn7FQEF3D7sroZbXuPZ7][Learning Emacs Lisp]]
 
 1. [[https://youtu.be/RQK_DaaX34Q][Introduction to Emacs Lisp]] ([[file:show-notes/Emacs-Lisp-01.org][Notes]])
