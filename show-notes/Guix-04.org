@@ -1,0 +1,219 @@
+#+title: Using Package Channels in GNU Guix
+
+* What will we learn?
+
+In this video I'll show you how you can find more software and drivers than what's available in Guix by default using a feature called "channels."  Channels give you even more freedom to manage your Guix configuration the way you want and also ensure that all your Guix machines are using the exact same versions of all software and drivers.
+
+You can even create your own channel pretty easily!  We'll cover that in another video.
+
+* What is a channel?
+
+A channel is a source of Guix packages that is stored in a Git repository.  When you add a channel to your Guix configuration, its Git repository will be pulled and it will be added to your Guix profile so that the new packages become available for your configuration.
+
+Since channels are Git repositories, we can be specific about which commit or branch of the channel we want to pull!  This can give us more flexibility to choose versions of packages that we use from the channels we configure.
+
+[[https://guix.gnu.org/manual/en/guix.html#Channels][Guix Manual: Channels]]
+
+* The channel configuration
+
+The channel configuration tells Guix where it can find the packages that the user wants to install.  To find other packages that aren't provided by Guix you'll need to edit your channel configuration to add channels which have the software or drivers you want to use.
+
+By default, the only channel that is configured in Guix is the main Guix repository at GNU Savannah.  You can check this by running the following command:
+
+#+begin_src sh
+
+  guix describe
+
+#+end_src
+
+To edit the channel configuration you can edit the file =~/.config/guix/channels.scm=.  This file doesn't exist by default so you will have to create it!
+
+Guix channel configurations are written in Guile Scheme!  Don't be afraid if you don't know Scheme, it will look like a plain configuration file to you once you get used to it.
+
+Let's take a look at a basic channel configuration:
+
+#+begin_src scheme
+
+  (cons* (channel
+          (name 'channel-x)
+          (url "https://github.com/daviwil/channel-x"))
+         (channel
+          (name 'nonguix)
+          (url "https://gitlab.com/nonguix/nonguix"))
+         %default-channels)
+
+#+end_src
+
+Some things to point out:
+
+- The important sections of the configuration are wrapped in parentheses because this is Lisp code!
+- The =cons*= at the beginning is a way to say that each channel item provided will be combined with the =%default-channels= to produce the final channel list
+- =%default-channels= is a variable containing the list of default channels (only the main Guix channel for now)
+
+This also means that you don't have to use the main Guix repository as your default channel!  If you want to fork the main Guix repository and make changes to it, you can use that in the place of =%default-channels= in your channel configuration.
+
+*IMPORTANT:* Whenever you change your channel configuration, you will need to run =guix pull= before the channel's packages will become available!
+
+If you've made any mistakes in the channel configuration file, you'll receive an error at the time you pull.  It's best to go double-check your channel file to ensure that all of the parentheses are matched up correctly!
+
+[[https://guix.gnu.org/manual/en/guix.html#Specifying-Additional-Channels][Guix Manual: Specifying Additional Channels]]
+
+* Additional configuration for channels
+
+In addition to the channel name and URL, you can also configure the branch of the Git repository to use and also the "introduction" information to authenticate the commits in the channel.
+
+Channel authentication uses some additional metadata to ensure that all commits in a channel past a certain commit have been signed with known GPG keys to help ensure that no malicious changes have been inserted into the channel.  You don't have to specify this introduction information, but it's good to do so if the channel supports it!
+
+One last thing to mention: if you're hacking on Guix packages locally, you can also use a local file URL for a package channel.  This can be a good way to ensure that your package changes will work correctly when pulled to someone else's machine!
+
+#+begin_src scheme
+
+  (cons* (channel
+          (name 'channel-x)
+          (branch "testing")
+          ;(url "file:///home/daviwil/Projects/Code/channel-x"))
+          (url "https://github.com/daviwil/channel-x"))
+         (channel
+          (name 'nonguix)
+          (url "https://gitlab.com/nonguix/nonguix")
+          (introduction
+            (make-channel-introduction
+              "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+              (openpgp-fingerprint
+              "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+         %default-channels)
+
+#+end_src
+
+[[https://guix.gnu.org/manual/en/guix.html#Using-a-Custom-Guix-Channel][Guix Manual: Using a Custom Guix Channel]]
+[[https://guix.gnu.org/manual/en/guix.html#Specifying-Additional-Channels][Guix Manual: Channel Authentication]]
+
+* Pinning channels to commits
+
+If you want to make your exact configuration fully reproducible across multiple machines, it can be helpful to "pin" the list of channels to specific commits so that you get the the same set of packages every time you run =guix pull=.  This can also be useful when you know that a more recent update to a channel causes problems for your system!
+
+You can run the =guix describe= command to generate a complete channel configuration with each channel pinned to the commit that you've pulled most recently:
+
+#+begin_src sh
+
+  guix describe --format=channels
+
+#+end_src
+
+You can take the output of this program and place it in the location where the channel configuration is kept!
+
+*IMPORTANT:* If you lock a single channel (like Nonguix) to a commit and that channel depends on packages in the main Guix channel, you might see errors when you pull!  You will also need to lock the main Guix channel to a compatible commit when this happens.  In other words, use =guix describe=!
+
+[[https://guix.gnu.org/manual/en/guix.html#Replicating-Guix][Guix Manual: Replicating Guix]]
+
+* Updating pinned channels
+
+Once you've pinned your channel configuration, you might want to update them to newer commits in the future.  One strategy can be to have a separate channel file with the base list of channels and pass that to =guix pull --channels=my-channels.scm=.  For example:
+
+*~/.config/guix/my-channels.scm:*
+
+#+begin_src scheme
+
+  (cons* (channel
+          (name 'channel-x)
+          (url "https://github.com/daviwil/channel-x"))
+         (channel
+          (name 'nonguix)
+          (url "https://gitlab.com/nonguix/nonguix"))
+         %default-channels)
+
+#+end_src
+
+*~/.config/guix/update-channels.sh:*
+
+#+begin_src sh
+
+  #!/bin/sh
+  guix pull --channels=$HOME/.config/guix/my-channels.scm
+  guix describe --format=channels > ~/.config/guix/channels.scm
+
+#+end_src
+
+Running the =update-channels.sh= script will use the =my-channels.scm= file to fetch the latest commits of each of your channels and then save the pinned channel configuration to the real channel config file so that all future runs of =guix pull= will use the pinned channel configuration!
+
+* Useful channels
+
+Here are a few useful Guix channels you might be interested to try!
+
+** Nonguix
+
+Site: https://gitlab.com/nonguix/nonguix
+
+The Nonguix channel is your primary source for software and drivers that can't be included in the main Guix repository.  You can find the following packages (and more!) there:
+
+- The full Linux kernel, necessary to run Guix on modern laptops
+- NVIDIA drivers (though I never got them to work)
+- Drivers for various wifi chipsets
+- Steam game store client
+- The latest Firefox release
+- .NET SDK 5
+- Clojure's Leiningen tool
+- Wine, the Windows compatibility layer
+
+Keep in mind that if you use the =linux= package here, it will require that the kernel be rebuilt every time you update your system!  This can take around an hour depending on how powerful your machine is.
+
+I'll show how to use this channel to perform a full installation of the Guix system distribution in the next Guix video!
+
+#+begin_src scheme
+
+  (channel
+    (name 'nonguix)
+    (url "https://gitlab.com/nonguix/nonguix")
+    (introduction
+      (make-channel-introduction
+        "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+        (openpgp-fingerprint
+        "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+
+#+end_src
+
+** flat
+
+Site: https://github.com/flatwhatson/guix-channel
+
+The =flat= channel provides an easy way to install Emacs 28 with the new =native-comp= branch providing native compilation of Emacs Lisp code.  After you set up this channel you can install the package =emacs-native-comp= instead of the default =emacs= package to get this new functionality.
+
+Keep in mind that this will compile both =libgccjit= and Emacs from source so installation can take 1-2 hours!  I recommend pinning this channel to the commit that you first pull it with so that you don't have to rebuild Emacs every time you run =guix pull=.
+
+#+begin_src scheme
+
+  (channel
+    (name 'flat)
+    (url "https://github.com/flatwhatson/guix-channel.git")
+    (introduction
+      (make-channel-introduction
+        "33f86a4b48205c0dc19d7c036c85393f0766f806"
+        (openpgp-fingerprint
+        "736A C00E 1254 378B A982  7AF6 9DBE 8265 81B6 4490"))))
+
+#+end_src
+
+** Guix Gaming Channels: Games
+
+Site: https://gitlab.com/guix-gaming-channels/games
+
+The channel provides Guix packages for a variety of proprietary games, making it easier to run them on Guix.  These packages do not contain the game data files, you have to own these games so that you can provide the data files so that they can run successfully!
+
+#+begin_src scheme
+
+  (channel
+    (name 'guix-gaming-games)
+    (url "https://gitlab.com/guix-gaming-channels/games.git")
+    (introduction
+      (make-channel-introduction
+        "c23d64f1b8cc086659f8781b27ab6c7314c5cca5"
+        (openpgp-fingerprint
+        "50F3 3E2E 5B0C 3D90 0424  ABE8 9BDC F497 A4BB CC7F"))))
+
+#+end_src
+
+* What's next?
+
+Now that we've covered enough of the fundamentals of Guix, I can finally show you how to perform a full Guix system installation!  In the next video, we'll do just that.
+
+After that, we'll continue covering the various ways you can use Guix to manage your system more effectively and keep your configuration consistent and reliable across all your machines!
