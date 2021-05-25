@@ -129,7 +129,8 @@ Run the initial index, providing your e-mail address so it knows how to identify
 
 #+begin_src sh
 
-  mu index --maildir=~/Mail --my-address=systemcrafters.test@gmail.com
+  mu init --maildir=~/Mail --my-address=systemcrafters.test@gmail.com
+  mu index
 
 #+end_src
 
