@@ -157,6 +157,8 @@ xkb_options caps:ctrl_modifier
 
 *Windows*
 
+Approach #1: Change the binding in the Windows registry
+
 On Windows you can use a simple registry file to tweak the CapsLock mapping.  Save the following text to a file called =CapsLockHack.reg=:
 
 #+begin_src
@@ -168,6 +170,14 @@ REGEDIT4
 #+end_src
 
 Now double-click on this file in Windows Explorer and allow Windows to apply it to your registry settings.  After you log out of your current session and log back in the new key mapping should be in effect. Note that this change will affect *all* users on your system.
+
+Approach #2: Use Microsoft's PowerToys
+
+You can use PowerToys' Keyboard Manager to easily remap the keys. Download the tool from their [[https://github.com/microsoft/PowerToys/releases][github]] page and install it. Then open the powertoys settings (you sould find it in the taskbar), go to keyboard manager, enable it if it isn't already enabled and remap your keys. Once finished you should see something like:
+
+=Caps Lock=   ➞ =Ctrl (Left)=
+
+=Ctrl (left)= ➞ =Caps Lock=
 
 *macOS*
 
