@@ -137,6 +137,24 @@ Run the initial index, providing your e-mail address so it knows how to identify
 
 Indexing could take a while depending on how much e-mail you have, but it's quite fast in general.
 
+*NOTE*: Starting with version 1.3.8, =mu index= doesn't accept these arguments anymore. You need to run:
+
+#+begin_src sh
+
+  mu init --maildir=~/Mail --my-address=systemcrafters.test@gmail.com
+
+#+end_src
+
+And then:
+
+#+begin_src sh
+
+  mu index
+
+#+end_src
+
+You only need to run =mu init= again if you wish to change your maildir or your addresses.
+
 * Setting up mu4e
 
 Before we do this though, turn off =evil-collection= for =mu4e=.
