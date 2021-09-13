@@ -448,13 +448,13 @@ We're going convert a couple of the variables from last time into customizable v
 
   (defcustom dotfiles-folder "~/.dotfiles"
     "The folder where dotfiles and org-mode configuration files are stored."
-    :type 'string
+    :type 'directory
     :group 'dotfiles)
 
   (defcustom dotfiles-org-files '()
     "The list of org-mode files under the `dotfiles-folder' which
   contain configuration files that should be tangled"
-    :type '(list string)
+    :type '(repeat string)
     :group 'dotfiles)
 
   (defun dotfiles-tangle-org-file (&optional org-file)
