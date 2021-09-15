@@ -140,7 +140,11 @@
 (use-package doom-themes
   :init (load-theme 'doom-palenight t))
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :init
+  (when (and (not (member "all-the-icons" (font-family-list)))
+             (window-system))
+    (all-the-icons-install-fonts t)))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
