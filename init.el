@@ -405,10 +405,35 @@
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("py" . "src python")))
 
+;; This allows you to tell org-babel to tangle you org files after
+;; save by placing:
+;; #+CATEGORY: Configuration
+;; in the head of the org file.
+;; Change this search key/term to what best suits the individual
+(setq efs/tangle-search-key "CATEGORY")
+(setq efs/tangle-search-term "Configuration")
+
+(defun efs/org-global-props (&optional efs/property)
+  "Get the plists of global org properties of current buffer.
+Takes as argument EFS/PROPERTY"
+  (interactive)
+  (unless efs/property (setq efs/property "PROPERTY"))
+  (org-element-map (org-element-parse-buffer)
+      'keyword (lambda (el)
+                 (when (string-match efs/property (org-element-property :key el))
+                   el))))
+
+(defun efs/org-global-prop-value (key)
+  "Get global org property KEY of current buffer."
+  (org-element-property :value (car (efs/org-global-props key))))
+
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun efs/org-babel-tangle-config ()
-  (when (string-equal (file-name-directory (buffer-file-name))
-                      (expand-file-name user-emacs-directory))
+  "Used to tangle org file when it change."
+  (when (or (string-equal (file-name-directory (buffer-file-name))
+                          (expand-file-name user-emacs-directory))
+            (string-equal (efs/org-global-prop-value efs/tangle-search-key)
+                          efs/tangle-search-term))
     ;; Dynamic scoping to the rescue
     (let ((org-confirm-babel-evaluate nil))
       (org-babel-tangle))))
