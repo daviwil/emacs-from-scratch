@@ -5,5 +5,5 @@
 # necessary tweaks in stream-tweaks.el that are only meant for use in the live
 # stream.
 
-export EMACSLOADPATH="/run/current-system/profile/share/emacs/site-lisp:/run/current-system/profile/share/emacs/27.1/lisp"
-emacs -Q --load stream-tweaks.el --load init.el Emacs.org
+#export EMACSLOADPATH="/run/current-system/profile/share/emacs/site-lisp:/run/current-system/profile/share/emacs/27.1/lisp"
+emacs --load stream-tweaks.el --load init.el Emacs.org

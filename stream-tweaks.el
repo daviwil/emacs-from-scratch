@@ -2,7 +2,7 @@
 ;; From Scratch streams.
 
 ;; Use this folder as the Emacs configuraton folder
-(setq user-emacs-directory "~/Projects/Code/emacs-from-scratch/")
+(setq user-emacs-directory "~/Works/Projects/emacs-from-scratch")
 (customize-set-value 'custom-theme-directory user-emacs-directory)
 
 (setq efs/default-font-size 300)
