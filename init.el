@@ -247,3 +247,9 @@
   :config (setq ccls-executable "/usr/local/bin/ccls"))
 
 ;; https://emacs-lsp.github.io/lsp-mode/tutorials/CPP-guide/
+
+;;(setq c-basic-offset 8)
+(setq c-default-style
+      '((java-mode . "java")
+        (awk-mode . "awk")
+        (other . "linux")))

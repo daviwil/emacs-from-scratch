@@ -6,4 +6,4 @@
 # stream.
 
 #export EMACSLOADPATH="/run/current-system/profile/share/emacs/site-lisp:/run/current-system/profile/share/emacs/27.1/lisp"
-emacs --load stream-tweaks.el --load init.el Emacs.org
+emacs --load /Users/tenglong.tl/Works/Projects/emacs-from-scratch/stream-tweaks.el --load /Users/tenglong.tl/Works/Projects/emacs-from-scratch/init.el /Users/tenglong.tl/Works/Projects/emacs-from-scratch/Emacs.org
