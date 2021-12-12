@@ -9,9 +9,14 @@ This is the configuration we've been building in the *Emacs From Scratch* series
 
 The following variables are used to tweak some of the configuration pieces for use in the live streams so you might need to adjust them for your local machine if you try to use this configuration directly.
 
+#+NAME: config-file
+#+begin_src emacs-lisp :tangle no :eval (setq org-confirm-babel-evaluate nil) :results values
+  (eval buffer-file-name)
+#+end_src
+
 #+begin_src emacs-lisp
 
-  ;; NOTE: init.el is now generated from Emacs.org.  Please edit that file
+  ;; NOTE: init.el is now generated from <<config-file()>>.  Please edit that file
   ;;       in Emacs and init.el will be generated automatically!
 
   ;; You will most likely need to adjust this font size for your system!
