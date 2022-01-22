@@ -1,9 +1,0 @@
-* TODO Brush my teeth
-SCHEDULED: <2020-10-10 Sat +1d>
-:PROPERTIES:
-:STYLE:    habit
-:LAST_REPEAT: [2020-10-09 Fri 10:16]
-:END:
-:LOGBOOK:
-- State "DONE"       from "TODO"       [2020-10-09 Fri 10:16]
-:END:
