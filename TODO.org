@@ -1,0 +1,25 @@
+#+title: Emacs From Scratch Tasks
+
+* TODO Customize Org display 
+** TODO Fix heading heights, not working
+* TODO Customize the mode line
+* TODO Customize theme background color?
+* TODO Customize tab bar for global mode line
+* TODO vc-mode, vc-mode-line, check diff colors
+* TODO Editing settings
+
+- auto-fill-mode
+- Whitespace trimming
+
+* TODO Better key bindings?
+
+- Buffer switching
+- Press RET to pick current minibuffer item
+
+#+begin_src emacs-lisp
+
+  (defun my-func (arg)
+    (find-file "~/.config/emacs/init.el"))
+
+#+end_src
+  
