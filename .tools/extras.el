@@ -28,3 +28,10 @@
 
 (setq global-mode-string '((:eval (efs/show-last-command))))
 (add-hook 'pre-command-hook #'efs/pre-command-handler t)
+
+;; Make sure the default font face is big enough
+(set-face-attribute 'default nil :height 200)
+
+;; If we've already configured some things, jump to init.el
+(unless tool-bar-mode
+  (find-file "~/Projects/Code/emacs-from-scratch/init.el"))
