@@ -81,3 +81,39 @@
 
 ;; Helpful key bindings
 (global-set-key (kbd "M-o") #'other-window)
+
+;; Customize the clock
+(display-time-mode 1)
+
+;; Tab bar customization
+(setq tab-bar-close-button-show nil
+      tab-bar-format '(tab-bar-format-history tab-bar-format-tabs-groups tab-bar-separator tab-bar-format-align-right tab-bar-format-global))
+(tab-bar-mode 1)
+
+(setq my/mode-line-prefix (propertize "TOO " 'face '(:inherit 'default :background "LawnGreen" :foreground "Blue")))
+
+(defun my/mode-line-buffer-status ()
+  (concat
+   (propertize ">" 'face '(:inherit 'default :height 0.8 :background "LawnGreen" :foreground "Black"))
+   (propertize ">" 'face '(:inherit 'default :height 0.8 :background "orange1" :foreground "Black"))))
+
+(defun my/mode-line-project()
+  (if (project-current)
+      (file-name-base (directory-file-name (project-root (project-current))))
+    ""))
+
+;; Mode line customization
+(setq-default mode-line-format
+	      '((:eval (my/mode-line-buffer-status))
+		mode-line-modified
+		" "
+		(:eval (my/mode-line-project))
+		" "
+		mode-line-buffer-identification
+		"   "
+		mode-line-position
+		(vc-mode vc-mode)
+		"  "
+		mode-line-modes
+		mode-line-misc-info
+		mode-line-end-spaces))

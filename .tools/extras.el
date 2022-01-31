@@ -5,9 +5,11 @@
 
 (defface efs/show-command-face
   '((t . (:foreground "Black"
-          :background "LawnGreen"
+       	  :background "LawnGreen"
+	        :family "JetBrains Mono"
+	        :height 0.9
           :weight bold
-	  :box (:line-width -3 :style released-button))))
+          :box (:line-width -3 :style released-button))))
   "Styling for how the last command is shown in the mode line")
 
 (defun efs/pre-command-handler ()
@@ -15,12 +17,14 @@
 	(format " %s // %s "
 		(ignore-errors
 		  (key-description (this-single-command-keys)))
-		this-command)))
+		this-command))
+  (force-mode-line-update t))
 
 (defun efs/show-last-command ()
   (concat
    "    "
-   (propertize efs/last-command-info 'face 'efs/show-command-face)))
+   (propertize efs/last-command-info 'face 'efs/show-command-face)
+   "    "))
 
 (setq global-mode-string '((:eval (efs/show-last-command))))
 (add-hook 'pre-command-hook #'efs/pre-command-handler t)
