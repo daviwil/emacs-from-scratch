@@ -26,7 +26,7 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     (exwm-workspace-switch-create 1)
 
     ;; Open eshell by default
-    ;;(eshell)
+    (eshell)
 
     ;; NOTE: The next two are disabled because we now use Polybar!
 
@@ -45,7 +45,8 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     (efs/run-in-background "dunst")
     (efs/run-in-background "nm-applet")
     (efs/run-in-background "pasystray")
-    (efs/run-in-background "blueman-applet"))
+    (efs/run-in-background "blueman-applet")
+    )
 
   (defun efs/exwm-update-class ()
     (exwm-workspace-rename-buffer exwm-class-name))
@@ -66,17 +67,18 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
   (defun efs/configure-window-by-class ()
     (interactive)
     (pcase exwm-class-name
-      ("Firefox" (exwm-workspace-move-window 2))
-      ("Sol" (exwm-workspace-move-window 3))
+      ;; ("qutebrowser" (exwm-layout-unset-fullscreen))
+      ;; C-c C-t C-f toggles floating / docking on X windows
+      ;; C-c C-t RET toggles display of modeline on X windows
       ("mpv" (exwm-floating-toggle-floating)
              (exwm-layout-toggle-mode-line))))
 
-  ;; This function should be used only after configuring autorandr!
-  (defun efs/update-displays ()
-    (efs/run-in-background "autorandr --change --force")
-    (efs/set-wallpaper)
-    (message "Display config: %s"
-             (string-trim (shell-command-to-string "autorandr --current"))))
+  ;; ;; This function should be used only after configuring autorandr!
+  ;; (defun efs/update-displays ()
+  ;;   (efs/run-in-background "autorandr --change --force")
+  ;;   (efs/set-wallpaper)
+  ;;   (message "Display config: %s"
+  ;;            (string-trim (shell-command-to-string "autorandr --current"))))
 
   (use-package exwm
     :config
@@ -96,7 +98,7 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
     (add-hook 'exwm-init-hook #'efs/exwm-init-hook)
 
     ;; Rebind CapsLock to Ctrl
-    (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+    ;; (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
 
     ;; NOTE: Uncomment the following two options if you want window buffers
     ;;       to be available on all workspaces!
@@ -109,19 +111,19 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
 
     ;; NOTE: Uncomment this option if you want to detach the minibuffer!
     ;; Detach the minibuffer (show it with exwm-workspace-toggle-minibuffer)
-    ;;(setq exwm-workspace-minibuffer-position 'top)
+    ;; (setq exwm-workspace-minibuffer-position 'top)
 
-    ;; Set the screen resolution (update this to be the correct resolution for your screen!)
-    (require 'exwm-randr)
-    (exwm-randr-enable)
-    (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
+    ;; ;; Set the screen resolution (update this to be the correct resolution for your screen!)
+    ;; (require 'exwm-randr)
+    ;; (exwm-randr-enable)
+    ;; (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
 
-    ;; This will need to be updated to the name of a display!  You can find
-    ;; the names of your displays by looking at arandr or the output of xrandr
-    (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
+    ;; ;; This will need to be updated to the name of a display!  You can find
+    ;; ;; the names of your displays by looking at arandr or the output of xrandr
+    ;; (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
 
-    ;; NOTE: Uncomment these lines after setting up autorandr!
-    ;; React to display connectivity changes, do initial display update
+    ;; ;; NOTE: Uncomment these lines after setting up autorandr!
+    ;; ;; React to display connectivity changes, do initial display update
     ;; (add-hook 'exwm-randr-screen-change-hook #'efs/update-displays)
     ;; (efs/update-displays)
 
@@ -168,7 +170,7 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
             ([s-right] . windmove-right)
             ([s-up] . windmove-up)
             ([s-down] . windmove-down)
-
+            
             ;; Launch applications via shell command
             ([?\s-&] . (lambda (command)
                          (interactive (list (read-shell-command "$ ")))
@@ -187,7 +189,8 @@ We use the excellent [[https://github.com/ch11ng/exwm][EXWM]] module as the basi
                       (number-sequence 0 9))))
 
     (exwm-input-set-key (kbd "s-SPC") 'counsel-linux-app)
-
+    (exwm-input-set-key (kbd "s-f") 'exwm-layout-toggle-fullscreen)
+    
     (exwm-enable))
 
 #+end_src
@@ -208,8 +211,9 @@ We use the [[https://github.com/DamienCassou/desktop-environment][desktop-enviro
     (desktop-environment-brightness-small-increment "2%+")
     (desktop-environment-brightness-small-decrement "2%-")
     (desktop-environment-brightness-normal-increment "5%+")
-    (desktop-environment-brightness-normal-decrement "5%-"))
-
+    (desktop-environment-brightness-normal-decrement "5%-")
+    (desktop-environment-volume-toggle-command "amixer -D pulse sset Master toggle")
+  )
 #+end_src
 
 ** Desktop File
@@ -229,7 +233,7 @@ sudo ln -f ~/.emacs.d/exwm/EXWM.desktop /usr/share/xsessions/EXWM.desktop
   [Desktop Entry]
   Name=EXWM
   Comment=Emacs Window Manager
-  Exec=sh /home/daviwil/.emacs.d/exwm/start-exwm.sh
+  Exec=sh /home/bruno/.emacs.d/exwm/start-exwm.sh
   TryExec=sh
   Type=Application
   X-LightDM-DesktopName=exwm
@@ -253,33 +257,33 @@ This launcher script is invoked by =EXWM.desktop= to start Emacs and load our de
   xss-lock -- slock &
 
   # Fire it up
-  exec dbus-launch --exit-with-session emacs -mm --debug-init -l ~/.emacs.d/desktop.el
+  exec dbus-launch --exit-with-session emacs -mm --debug-init -l /home/bruno/.emacs.d/desktop.el
 
 #+end_src
 
-** Keyboard Configuration
+# ** Keyboard Configuration
 
-The =Xmodmap= file will be used with the =xmodmap= program to remap CapsLock to Ctrl inside of our desktop environment:
+# The =Xmodmap= file will be used with the =xmodmap= program to remap CapsLock to Ctrl inside of our desktop environment:
 
-#+begin_src sh :tangle ./exwm/Xmodmap
+# #+begin_src sh :tangle ./exwm/Xmodmap
 
-  clear lock
-  clear control
-  keycode 66 = Control_L
-  add control = Control_L
-  add Lock = Control_R
+#   clear lock
+#   clear control
+#   keycode 66 = Control_L
+#   add control = Control_L
+#   add Lock = Control_R
 
-#+end_src
+# #+end_src
 
-** DPI configuration
+# ** DPI configuration
 
-The =Xresources= file will be used with =xrdb= in =start-exwm.sh= to set our screen DPI:
+# The =Xresources= file will be used with =xrdb= in =start-exwm.sh= to set our screen DPI:
 
-#+begin_src conf :tangle ./exwm/Xresources
+# #+begin_src conf :tangle ./exwm/Xresources
 
-  Xft.dpi:   100   # Set this to your desired DPI!  Larger number means bigger text and UI
+#   Xft.dpi:   100   # Set this to your desired DPI!  Larger number means bigger text and UI
 
-#+end_src
+# #+end_src
 
 ** Panel with Polybar
 
@@ -692,16 +696,16 @@ We can also set up some functions for enabling and disabling notifications at an
 
 #+begin_src emacs-lisp
 
-  (defun efs/disable-desktop-notifications ()
-    (interactive)
-    (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_PAUSE\""))
+  ;; (defun efs/disable-desktop-notifications ()
+  ;;   (interactive)
+  ;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_PAUSE\""))
 
-  (defun efs/enable-desktop-notifications ()
-    (interactive)
-    (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_RESUME\""))
+  ;; (defun efs/enable-desktop-notifications ()
+  ;;   (interactive)
+  ;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_RESUME\""))
 
-  (defun efs/toggle-desktop-notifications ()
-    (interactive)
-    (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_TOGGLE\""))
+  ;; (defun efs/toggle-desktop-notifications ()
+  ;;   (interactive)
+  ;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_TOGGLE\""))
 
 #+end_src

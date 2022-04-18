@@ -9,4 +9,4 @@ compton &
 xss-lock -- slock &
 
 # Fire it up
-exec dbus-launch --exit-with-session emacs -mm --debug-init -l ~/.emacs.d/desktop.el
+exec dbus-launch --exit-with-session emacs -mm --debug-init -l /home/bruno/.emacs.d/desktop.el

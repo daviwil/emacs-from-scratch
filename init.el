@@ -2,11 +2,17 @@
 ;;       in Emacs and init.el will be generated automatically!
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar efs/default-font-size 180)
-(defvar efs/default-variable-font-size 180)
+(defvar efs/default-font-size 80)
+(defvar efs/default-variable-font-size 80)
 
 ;; Make frame transparency overridable
-(defvar efs/frame-transparency '(90 . 90))
+(defvar efs/frame-transparency '(95 . 95))
+
+;; Set folder for global org files
+(defvar efs/orgfiles "~/orgfiles")
+
+;; The folder where you kep your git repos (for Projectile) 
+(defvar efs/projectile-default-dir "~/dev")
 
 ;; The default is 800 kilobytes.  Measured in bytes.
 (setq gc-cons-threshold (* 50 1000 1000))
@@ -63,7 +69,7 @@
 (scroll-bar-mode -1)        ; Disable visible scrollbar
 (tool-bar-mode -1)          ; Disable the toolbar
 (tooltip-mode -1)           ; Disable tooltips
-(set-fringe-mode 10)        ; Give some breathing room
+(set-fringe-mode 5)        ; Give some breathing room
 
 (menu-bar-mode -1)            ; Disable the menu bar
 
@@ -138,7 +144,7 @@
   :commands command-log-mode)
 
 (use-package doom-themes
-  :init (load-theme 'doom-palenight t))
+  :init (load-theme 'doom-dark+ t))
 
 (use-package all-the-icons)
 
@@ -263,10 +269,17 @@
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
 
+  (let ((default-directory efs/orgfiles))
+  (setq tasks-file-path (expand-file-name "tasks.org"))
+  (setq habits-file-path (expand-file-name "habits.org"))
+  (setq birthdays-file-path (expand-file-name "birthdays.org"))
+  (setq journal-file-path (expand-file-name "journal.org"))
+  (setq metrics-file-path (expand-file-name "metrics.org")))
+
   (setq org-agenda-files
-        '("~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org"
-          "~/Projects/Code/emacs-from-scratch/OrgFiles/Habits.org"
-          "~/Projects/Code/emacs-from-scratch/OrgFiles/Birthdays.org"))
+  `(,tasks-file-path
+  ,habits-file-path
+  ,birthdays-file-path))
 
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
@@ -299,10 +312,10 @@
 
   ;; Configure custom agenda views
   (setq org-agenda-custom-commands
-   '(("d" "Dashboard"
-     ((agenda "" ((org-deadline-warning-days 7)))
-      (todo "NEXT"
-        ((org-agenda-overriding-header "Next Tasks")))
+  '(("d" "Dashboard"
+  ((agenda "" ((org-deadline-warning-days 7)))
+  (todo "NEXT"
+  ((org-agenda-overriding-header "Next Tasks")))
       (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
 
     ("n" "Next Tasks"
@@ -347,34 +360,34 @@
 
   (setq org-capture-templates
     `(("t" "Tasks / Projects")
-      ("tt" "Task" entry (file+olp "~/Projects/Code/emacs-from-scratch/OrgFiles/Tasks.org" "Inbox")
+      ("tt" "Task" entry (file+olp tasks-file-path "Inbox")
            "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
 
       ("j" "Journal Entries")
       ("jj" "Journal" entry
-           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           (file+olp+datetree journal-file-path)
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
            :clock-in :clock-resume
            :empty-lines 1)
       ("jm" "Meeting" entry
-           (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+           (file+olp+datetree journal-file-path)
            "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
 
       ("w" "Workflows")
-      ("we" "Checking Email" entry (file+olp+datetree "~/Projects/Code/emacs-from-scratch/OrgFiles/Journal.org")
+      ("we" "Checking Email" entry (file+olp+datetree journal-file-path)
            "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
 
       ("m" "Metrics Capture")
-      ("mw" "Weight" table-line (file+headline "~/Projects/Code/emacs-from-scratch/OrgFiles/Metrics.org" "Weight")
+      ("mw" "Weight" table-line (file+headline metrics-file-path "Weight")
        "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)))
 
-  (define-key global-map (kbd "C-c j")
-    (lambda () (interactive) (org-capture nil "jj")))
+       (define-key global-map (kbd "C-c j")
+       (lambda () (interactive) (org-capture nil "jj")))
 
-  (efs/org-font-setup))
+       (efs/org-font-setup))
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode)
@@ -389,21 +402,29 @@
 (use-package visual-fill-column
   :hook (org-mode . efs/org-mode-visual-fill))
 
+;; python3 as default interpreter
+(setq org-babel-python-command "python3")
+
+;; Interprets code blocks in org-mode using C-c C-c
 (with-eval-after-load 'org
-  (org-babel-do-load-languages
-      'org-babel-load-languages
-      '((emacs-lisp . t)
-      (python . t)))
+    (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+        (python . t)
+        (C . t)
+        (shell . t)))
+        
+    (push '("conf-unix" . conf-unix) org-src-lang-modes))
 
-  (push '("conf-unix" . conf-unix) org-src-lang-modes))
-
+;; set <lang TAB shortcuts (<el <py <C++ etc.)
 (with-eval-after-load 'org
-  ;; This is needed as of Org 9.2
-  (require 'org-tempo)
+;; This is needed as of Org 9.2
+(require 'org-tempo)
 
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("py" . "src python")))
+(add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("cpp" . "src C++")))
 
 ;; Automatically tangle our Emacs.org config file when we save it
 (defun efs/org-babel-tangle-config ()
@@ -478,6 +499,31 @@
   :config
   (pyvenv-mode 1))
 
+(use-package cmake-mode
+  :defer t
+  :mode ("CMakeLists.txt" . cmake-mode))
+
+(use-package cmake-project
+  :commands (cmake-project-find-root-directory cmake-project-mode)
+  :diminish cmake-project-mode
+  :init (progn
+          (add-hook 'c++-mode-hook
+                    (lambda () (if (cmake-project-find-root-directory)
+                                   (cmake-project-mode 1))))
+          (add-hook 'python-mode-hook
+                    (lambda () (if (cmake-project-find-root-directory)
+                                   (cmake-project-mode 1)))))
+  :config (progn
+            (defun cmake-project-find-root-directory ()
+              "Find the top-level CMake directory - tweaked for
+               our setup where source may be in subdirectories."
+              (let ((file (or
+                           (cmake-project--upward-find-last-file
+                            "CMakeLists.txt")
+                           (cmake-project--upward-find-last-file
+                            "CMakeLists.txt" ".."))))
+                (if file (file-name-as-directory file))))))
+
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
@@ -500,8 +546,8 @@
   ("C-c p" . projectile-command-map)
   :init
   ;; NOTE: Set this to the folder where you keep your Git repos!
-  (when (file-directory-p "~/Projects/Code")
-    (setq projectile-project-search-path '("~/Projects/Code")))
+  (when (file-directory-p efs/projectile-default-dir)
+    (setq projectile-project-search-path `(,efs/projectile-default-dir)))
   (setq projectile-switch-project-action #'projectile-dired))
 
 (use-package counsel-projectile
@@ -528,11 +574,12 @@
 (use-package term
   :commands term
   :config
-  (setq explicit-shell-file-name "bash") ;; Change this to zsh, etc
-  ;;(setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
+  (setq explicit-shell-file-name "zsh") ;; Change this to zsh, etc
+  (setq explicit-zsh-args '())         ;; Use 'explicit-<shell>-args for shell-specific args
 
   ;; Match the default Bash shell prompt.  Update this if you have a custom prompt
-  (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+  ;; (setq term-prompt-regexp "^[^#$%>\n]*[#$%>] *"))
+ )
 
 (use-package eterm-256color
   :hook (term-mode . eterm-256color-mode))

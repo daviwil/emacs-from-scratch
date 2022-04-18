@@ -13,7 +13,7 @@
   (exwm-workspace-switch-create 1)
 
   ;; Open eshell by default
-  ;;(eshell)
+  (eshell)
 
   ;; NOTE: The next two are disabled because we now use Polybar!
 
@@ -32,7 +32,8 @@
   (efs/run-in-background "dunst")
   (efs/run-in-background "nm-applet")
   (efs/run-in-background "pasystray")
-  (efs/run-in-background "blueman-applet"))
+  (efs/run-in-background "blueman-applet")
+  )
 
 (defun efs/exwm-update-class ()
   (exwm-workspace-rename-buffer exwm-class-name))
@@ -53,17 +54,18 @@
 (defun efs/configure-window-by-class ()
   (interactive)
   (pcase exwm-class-name
-    ("Firefox" (exwm-workspace-move-window 2))
-    ("Sol" (exwm-workspace-move-window 3))
+    ;; ("qutebrowser" (exwm-layout-unset-fullscreen))
+    ;; C-c C-t C-f toggles floating / docking on X windows
+    ;; C-c C-t RET toggles display of modeline on X windows
     ("mpv" (exwm-floating-toggle-floating)
            (exwm-layout-toggle-mode-line))))
 
-;; This function should be used only after configuring autorandr!
-(defun efs/update-displays ()
-  (efs/run-in-background "autorandr --change --force")
-  (efs/set-wallpaper)
-  (message "Display config: %s"
-           (string-trim (shell-command-to-string "autorandr --current"))))
+;; ;; This function should be used only after configuring autorandr!
+;; (defun efs/update-displays ()
+;;   (efs/run-in-background "autorandr --change --force")
+;;   (efs/set-wallpaper)
+;;   (message "Display config: %s"
+;;            (string-trim (shell-command-to-string "autorandr --current"))))
 
 (use-package exwm
   :config
@@ -83,7 +85,7 @@
   (add-hook 'exwm-init-hook #'efs/exwm-init-hook)
 
   ;; Rebind CapsLock to Ctrl
-  (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
+  ;; (start-process-shell-command "xmodmap" nil "xmodmap ~/.emacs.d/exwm/Xmodmap")
 
   ;; NOTE: Uncomment the following two options if you want window buffers
   ;;       to be available on all workspaces!
@@ -96,19 +98,19 @@
 
   ;; NOTE: Uncomment this option if you want to detach the minibuffer!
   ;; Detach the minibuffer (show it with exwm-workspace-toggle-minibuffer)
-  ;;(setq exwm-workspace-minibuffer-position 'top)
+  ;; (setq exwm-workspace-minibuffer-position 'top)
 
-  ;; Set the screen resolution (update this to be the correct resolution for your screen!)
-  (require 'exwm-randr)
-  (exwm-randr-enable)
-  (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
+  ;; ;; Set the screen resolution (update this to be the correct resolution for your screen!)
+  ;; (require 'exwm-randr)
+  ;; (exwm-randr-enable)
+  ;; (start-process-shell-command "xrandr" nil "xrandr --output Virtual-1 --primary --mode 2048x1152 --pos 0x0 --rotate normal")
 
-  ;; This will need to be updated to the name of a display!  You can find
-  ;; the names of your displays by looking at arandr or the output of xrandr
-  (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
+  ;; ;; This will need to be updated to the name of a display!  You can find
+  ;; ;; the names of your displays by looking at arandr or the output of xrandr
+  ;; (setq exwm-randr-workspace-monitor-plist '(2 "Virtual-2" 3 "Virtual-2"))
 
-  ;; NOTE: Uncomment these lines after setting up autorandr!
-  ;; React to display connectivity changes, do initial display update
+  ;; ;; NOTE: Uncomment these lines after setting up autorandr!
+  ;; ;; React to display connectivity changes, do initial display update
   ;; (add-hook 'exwm-randr-screen-change-hook #'efs/update-displays)
   ;; (efs/update-displays)
 
@@ -174,6 +176,7 @@
                     (number-sequence 0 9))))
 
   (exwm-input-set-key (kbd "s-SPC") 'counsel-linux-app)
+  (exwm-input-set-key (kbd "s-f") 'exwm-layout-toggle-fullscreen)
 
   (exwm-enable))
 
@@ -184,7 +187,9 @@
   (desktop-environment-brightness-small-increment "2%+")
   (desktop-environment-brightness-small-decrement "2%-")
   (desktop-environment-brightness-normal-increment "5%+")
-  (desktop-environment-brightness-normal-decrement "5%-"))
+  (desktop-environment-brightness-normal-decrement "5%-")
+  (desktop-environment-volume-toggle-command "amixer -D pulse sset Master toggle")
+)
 
 ;; Make sure the server is started (better to do this in your main Emacs config!)
 (server-start)
@@ -213,14 +218,14 @@
 ;; Update panel indicator when workspace changes
 (add-hook 'exwm-workspace-switch-hook #'efs/send-polybar-exwm-workspace)
 
-(defun efs/disable-desktop-notifications ()
-  (interactive)
-  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_PAUSE\""))
+;; (defun efs/disable-desktop-notifications ()
+;;   (interactive)
+;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_PAUSE\""))
 
-(defun efs/enable-desktop-notifications ()
-  (interactive)
-  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_RESUME\""))
+;; (defun efs/enable-desktop-notifications ()
+;;   (interactive)
+;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_RESUME\""))
 
-(defun efs/toggle-desktop-notifications ()
-  (interactive)
-  (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_TOGGLE\""))
+;; (defun efs/toggle-desktop-notifications ()
+;;   (interactive)
+;;   (start-process-shell-command "notify-send" nil "notify-send \"DUNST_COMMAND_TOGGLE\""))
