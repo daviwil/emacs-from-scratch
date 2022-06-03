@@ -2,8 +2,8 @@
 ;;       in Emacs and init.el will be generated automatically!
 
 ;; You will most likely need to adjust this font size for your system!
-(defvar efs/default-font-size 180)
-(defvar efs/default-variable-font-size 180)
+(defvar efs/default-font-size 140)
+(defvar efs/default-variable-font-size 140)
 
 ;; Make frame transparency overridable
 (defvar efs/frame-transparency '(90 . 90))
@@ -610,3 +610,27 @@
 
 ;; Make gc pauses faster by decreasing the threshold.
 (setq gc-cons-threshold (* 2 1000 1000))
+
+;; My code here
+(setq-default cursor-type 'bar)
+
+(global-set-key (kbd "C-M-o")   'other-window)
+(global-set-key (kbd "<C-f8>")  'neotree-show)
+(global-set-key (kbd "<C-f9>")  'neotree-hide)
+(global-set-key (kbd "<C-f10>") 'neotree-change-root)
+
+(setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+
+(add-hook 'c-mode-common-hook #'(lambda ()
+				    (setq c-basic-offset 2
+					  c-indent-level 2
+					  c-default-style "bsd")))
+(add-hook 'go-mode-hook
+          (lambda ()
+            (add-hook 'before-save-hook 'gofmt-before-save)
+            (setq tab-width 4)
+            (setq indent-tabs-mode 1)))
+
+(setq inferior-lisp-program "sbcl")
+(add-to-list 'load-path "~/.emacs.d/slime")
+(require 'slime)
