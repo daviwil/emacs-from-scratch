@@ -219,7 +219,7 @@ You can compare two numeric values (even integers against floats):
   (< 1 2)     ;; t
   (> 1 2)     ;; nil
   (> 1 1)     ;; nil
-  (> 1.2 1)   ;; nil
+  (> 1.2 1)   ;; t
 
   (>= 1 1)     ;; t
   (<= -1 -1.0) ;; t
@@ -598,7 +598,7 @@ Emacs provides the following logic operators:
 - =not= - Inverts the truth value of the argument
 - =and= - Returns the last value if all expressions are truthy
 - =or= - Returns the first value that is truthy (short-circuits)
-- =xor= - Returns the first value that is truthy (doesn't short-circuit)
+- =xor= - Returns the truthy value if the other one is false, otherwise returns nil
 
 #+begin_src emacs-lisp
 
@@ -614,6 +614,11 @@ Emacs provides the following logic operators:
   (or  nil 'something) ;; 'something
   (or  nil 'something t) ;; 'something
   (or (- 3 3) (+ 2 0)) ;; 0
+  
+  (xor 1 1) ;; nil
+  (xor nil 1) ;; 1
+  (xor 1 nil) ;; 1
+  (xor 1 nil nil) ;; wrong-number-of-arguments
 
 #+end_src
 
